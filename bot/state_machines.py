@@ -4,7 +4,14 @@ from json import load as json_load, dumps as json_dumps
 
 class StateMachine:
     ENCODING = "UTF-8"
-    """
+
+    def __init__(self, filename="state_db.json"):
+        self.dbname = filename
+
+        self.states = {}
+        if file_exists(filename):
+            self.read_database(filename)
+        self.__doc__ = """
         --------- EXAMPLE ---------
         
         states = StateMachine()
@@ -13,13 +20,6 @@ class StateMachine:
         if user_current_state is not None:
             do_some_actions()
     """
-
-    def __init__(self, filename="state_db.json"):
-        self.dbname = filename
-
-        self.states = {}
-        if file_exists(filename):
-            self.read_database(filename)
 
     def get(self, user_id):
         return self.states.get(str(user_id), None)
