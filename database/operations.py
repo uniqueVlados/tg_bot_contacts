@@ -1,10 +1,11 @@
 from sqlalchemy.orm import Session
 
-from . import engine, get_db
+from . import get_db
 from database.models import User, Like
 
 
 def create_like(from_user_id: int, to_user_id: int):
+    """Создает лайк между пользователями """
     like = Like(from_user_id=from_user_id, to_user_id=to_user_id)
     db = get_db()
     db.add(like)
@@ -12,6 +13,7 @@ def create_like(from_user_id: int, to_user_id: int):
 
 
 def get_all_likes():
+    """ Получает всех пользователей из бд"""
     db = get_db()
     return db.query(Like).all()
 
