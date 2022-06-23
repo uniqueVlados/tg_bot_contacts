@@ -18,6 +18,6 @@ async def start_(message: types.Message):
     user_new_state = WAIT_FOR_ACTION
 
     await message.reply(reply_text)
-    await change_user_state(user_id, user_new_state)
+    change_user_state(user_id, user_new_state)
 
 
