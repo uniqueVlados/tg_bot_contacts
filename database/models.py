@@ -13,7 +13,6 @@ class User(Base):
     gender = Column(String(1))
     love_gender = Column(String(1))
     link_photo = Column(String(50))
-    tg_user_id = Column(String(15))
     description = Column(Text(200))
     location = Column(String(50))
     # is_active = Column(Boolean)

@@ -39,3 +39,41 @@ def create_user(params):
 
     db.commit()
 
+
+def check_user_account(tg_user_id: int):
+    """ Проверяет наличие аккаунта пользователя """
+    db = get_db()
+    state = db.query(State).filter(State.tg_id == tg_user_id).first()
+    if state is None or state.user is None:
+        return False
+
+    return True
+
+
+def get_user_by_tg_id(tg_user_id: int):
+    """ Получает пользователя по его tg_id """
+    db = get_db()
+    state = db.query(State).filter(State.tg_id == tg_user_id).first()
+    if state is None or state.user is None:
+        return None
+
+    return state.user
+
+
+def get_user_by_id(user_id: int):
+    """ Получает пользователя по его id """
+    db = get_db()
+    return db.query(User).filter(User.id == user_id).first()
+
+
+def get_user_state(tg_user_id: int):
+    """ Получает состояние пользователя """
+    db = get_db()
+    state = db.query(State).filter(State.tg_id == tg_user_id).first()
+
+    if not state:
+        return None
+
+    return state.value
+
+
