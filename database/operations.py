@@ -77,3 +77,24 @@ def get_user_state(tg_user_id: int):
     return state.value
 
 
+def set_user_state(tg_user_id: int, value: str):
+    """ Устанавливает состояние пользователя """
+    db = get_db()
+    state = db.query(State).filter(State.tg_id == tg_user_id).first()
+    if not state:
+        state = State(tg_id=tg_user_id, value=value)
+        db.add(state)
+
+    state.value = value
+    db.commit()
+
+
+def get_all_users():
+    """ Получает всех пользователей из бд """
+    db = get_db()
+    return db.query(User).all()
+
+
+def create_invite_code(tg_user_id: int):
+    """ Создает код приглашения для пользователя """
+    pass
