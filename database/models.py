@@ -28,6 +28,7 @@ class User(Base):
 
 class Like(Base):
     __tablename__ = 'like'
+
     id = Column(Integer, nullable=False, unique=True, primary_key=True, autoincrement=True)
     from_user_id = Column(Integer, ForeignKey('user.id'))
     to_user_id = Column(Integer, ForeignKey('user.id'))
@@ -41,7 +42,8 @@ class Like(Base):
 
 class State(Base):
     __tablename__ = 'like'
-    tg_id = Column(Integer, nullable=False, unique=True, primary_key=True)
+
+    tg_id = Column(String(9), nullable=False, unique=True, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     value = Column(String(10))
     user = relationship("User", back_populates="state")

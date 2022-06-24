@@ -1,6 +1,8 @@
-from . import get_db
-from database.models import User, Like, State
 import secrets
+
+from database.models import User, Like, State
+from . import get_db
+
 
 def create_like(from_user_id: int, to_user_id: int):
     """Создает лайк между пользователями """
@@ -95,12 +97,41 @@ def get_all_users():
     return db.query(User).all()
 
 
-def create_invite_code(tg_user_id: int):
+def create_invite_code():
     """ Создает код приглашения для пользователя """
     alp = "ERTYUIOPASDFGHJKLZXCVBNM1234567890"
     return ''.join(secrets.choice(alp) for i in range(8))
 
 
-def check_invite_code(invite_code):
+def check_invite_code(invite_code: str):
+    """ Проверяет код приглашения"""
     db = get_db()
-    return db.query(User.invite_code == invite_code).first()
+    return bool(db.query(User.invite_code == invite_code).first())
+
+
+def set_user_name(user_id, name):
+    """ Устанавливает имя пользователя """
+    db = get_db()
+    user = get_user_by_tg_id(user_id)
+    if not user:
+        user = User(name=name, invite_code=create_invite_code())
+        db.add(user)
+
+    user.name = name
+    db.commit()
+
+
+def set_user_last_name(user_id, last_name):
+    """ Устанавливает фамилию пользователя """
+    db = get_db()
+    user = get_user_by_tg_id(user_id)
+    user.last_name = last_name
+    db.commit()
+
+
+def set_user_gender(user_id, gender):
+    """ Устанавливает пол пользователю """
+    db = get_db()
+    user = get_user_by_tg_id(user_id)
+    user.gender = gender
+    db.commit()
