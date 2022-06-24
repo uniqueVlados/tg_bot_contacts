@@ -99,3 +99,8 @@ def create_invite_code(tg_user_id: int):
     """ Создает код приглашения для пользователя """
     alp = "ERTYUIOPASDFGHJKLZXCVBNM1234567890"
     return ''.join(secrets.choice(alp) for i in range(8))
+
+
+def check_invite_code(invite_code):
+    db = get_db()
+    return db.query(User.invite_code == invite_code).first()

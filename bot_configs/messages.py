@@ -26,3 +26,7 @@ ANSWER_LIKED_MAN = f'Вы понравились парню, показать е
 
 SHOW = "Показать"
 DONT_SHOW = MENU_3
+
+
+CHECK_INVITE = "Вы ввели действительный код"
+NOT_CHECK_INVITE = "Вы ввели недействительный код"
