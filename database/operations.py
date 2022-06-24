@@ -1,6 +1,6 @@
 from . import get_db
 from database.models import User, Like, State
-
+import secrets
 
 def create_like(from_user_id: int, to_user_id: int):
     """Создает лайк между пользователями """
@@ -97,4 +97,5 @@ def get_all_users():
 
 def create_invite_code(tg_user_id: int):
     """ Создает код приглашения для пользователя """
-    pass
+    alp = "ERTYUIOPASDFGHJKLZXCVBNM1234567890"
+    return ''.join(secrets.choice(alp) for i in range(8))
