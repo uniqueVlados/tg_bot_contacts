@@ -49,7 +49,7 @@ async def handle_invite_code(message: types.Message, user_id, invite_code):
 
 async def handle_agreement(message: types.Message, user_id, answer_):
     if answer_ == AGREE:
-        await message.answer(AGREEMENT_ACCEPTED)
+        await message.answer(AGREEMENT_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
         await message.answer(CREATE_ACCOUNT)
         set_user_state(user_id, NAME_INPUT)
     elif answer_ == DISAGREE:
@@ -86,50 +86,57 @@ async def handle_name_input(message: types.Message, user_id, name):
     await message.answer(ans, reply_markup=keyboard)
 
 
+def check_gender(gender):
+    return gender == WOMAN or gender == MAN
+
 
 async def handle_gender(message: types.Message, user_id, gender):
     user = get_user_by_id(user_id)
-    if user and user.gender:
-        set_user_gender(user_id, gender)
-        await message.answer(NEW_GENDER_EDIT, reply_markup=types.ReplyKeyboardRemove())
-        set_user_state(user_id, WAIT_FOR_ACTION)
-    if gender == WOMAN or gender == MAN:
-        set_user_gender(user_id, gender)
-        await message.answer(GENDER_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
-        set_user_state(user_id, DESCRIPTION_INPUT)
-    else:
+    if not check_gender(gender):
         await message.answer(ERROR_KEYBOARD, reply_markup=gender_keyboard)
+        return
+    state = DESCRIPTION_INPUT
+    ans = GENDER_ACCEPTED
+    if user and user.gender:
+        state = WAIT_FOR_ACTION
+        ans = NEW_GENDER_EDIT
+    set_user_gender(user_id, gender)
+    set_user_state(user_id, state)
+    await message.answer(ans, reply_markup=types.ReplyKeyboardRemove())
+
+
+def check_description(desc):
+    return len(desc) < 200
 
 
 async def handle_description_input(message: types.Message, user_id, description):
     user = get_user_by_id(user_id)
-    if user and user.description:
-        set_user_description(user_id, description)
-        await message.answer(NEW_DESCRIPTION_EDIT, reply_markup=types.ReplyKeyboardRemove())
-        set_user_state(user_id, WAIT_FOR_ACTION)
-    if len(description) > 200:
+    if not check_description(description):
         await message.answer(DESC_ERROR, reply_markup=types.ReplyKeyboardRemove())
-    else:
-        set_user_description(user_id, description)
-        await message.answer(DESK_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
-        set_user_state(user_id, LOCATION_INPUT)
-
-
-
+        return
+    state = LOCATION_INPUT
+    ans = DESK_ACCEPTED
+    if user and user.description:
+        state = WAIT_FOR_ACTION
+        ans = NEW_DESCRIPTION_EDIT
+    set_user_description(user_id, description)
+    set_user_state(user_id, state)
+    await message.answer(ans, reply_markup=types.ReplyKeyboardRemove())
 
 
 async def handle_location_input(message: types.Message, user_id, location):
     user = get_user_by_id(user_id)
-    if user and user.location and cities.check_location(location.capitalize()):
-        set_user_location(user_id, location)
-        await message.answer(NEW_LOCATION_EDIT, reply_markup=types.ReplyKeyboardRemove())
-        set_user_state(user_id, WAIT_FOR_ACTION)
-    if cities.check_location(location.capitalize()):
-        set_user_location(user_id, location)
-        await message.answer(LOCATION_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
-        set_user_state(user_id, LINK_PHOTO_INPUT)
-    else:
+    if not cities.check_location(location.capitalize()):
         await message.answer(LOCATION_ERROR, reply_markup=types.ReplyKeyboardRemove())
+        return
+    state = LINK_PHOTO_INPUT
+    ans = LOCATION_ACCEPTED
+    if user and user.location:
+        state = WAIT_FOR_ACTION
+        ans = NEW_LOCATION_EDIT
+    set_user_location(user_id, location)
+    set_user_state(user_id, state)
+    await message.answer(ans, reply_markup=types.ReplyKeyboardRemove())
 
 
 # обработчик текстовых сообщений
@@ -158,15 +165,22 @@ async def handle_docs_photo(message: types.Message):
     user_id = str(message.from_user.id)
     photo_id = message.photo[0].file_id
     user = get_user_by_id(user_id)
+    state = LINK_PHOTO_INPUT
+    ans = PHOTO_ACCEPTED
     if user and user.link_photo:
-        set_user_link_photo(user_id, photo_id)
-        await message.answer(NEW_LINK_PHOTO_EDIT, reply_markup=types.ReplyKeyboardRemove())
-        set_user_state(user_id, WAIT_FOR_ACTION)
-    if get_user_state(user_id) == LINK_PHOTO:
-        await message.answer(PHOTO_ACCEPTED, reply_markup=form_keyboard)
-        set_user_link_photo(user_id, photo_id)
-    else:
-        await message.answer(PHOTO_ERROR, reply_markup=types.ReplyKeyboardRemove())
+        state = WAIT_FOR_ACTION
+        ans = NEW_LINK_PHOTO_EDIT
+    set_user_link_photo(user_id, photo_id)
+    await message.answer(PHOTO_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
+    set_user_link_photo(user_id, photo_id)
+    user = get_user_by_tg_id(user_id)
+    set_user_state(user_id, WAIT_FOR_ACTION)
+    await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
+    await bot.send_photo(user_id, user.link_photo)
+    await message.answer("Выберите действие ниже", reply_markup=form_keyboard)
+
+
+
 
 
 
@@ -177,27 +191,24 @@ async def call_back_data(callback: types.CallbackQuery):
     user_id = callback.from_user.id
 
     if data == GET_FORM:
-        user = get_user_by_id(user_id)
-        set_user_state(user_id, WAIT_FOR_ACTION)
-        await callback.message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
-        await bot.send_photo(user_id, user.link_photo)
+        await callback.message.answer(f"Анкета подтверждена", reply_markup=types.ReplyKeyboardRemove())
     elif data == EDIT_FORM:
         user = get_user_by_id(user_id)
         set_user_state(user_id, WAIT_FOR_ACTION)
         await callback.message.answer(FORM_INFO, reply_markup=edit_keyboard)
 
-    elif data == CHANGE + NAME:
+    elif data == NAME:
         set_user_state(user_id, NAME_INPUT)
         await callback.message.answer(NEW_NAME, reply_markup=types.ReplyKeyboardRemove())
-    elif data == CHANGE + GENDER:
+    elif data == GENDER:
         set_user_state(user_id, GENDER_INPUT)
         await callback.message.answer(NEW_GENDER, reply_markup=types.ReplyKeyboardRemove())
-    elif data == CHANGE + LOCATION:
+    elif data == LOCATION:
         set_user_state(user_id, LOCATION_INPUT)
         await callback.message.answer(NEW_LOCATION, reply_markup=types.ReplyKeyboardRemove())
-    elif data == CHANGE + DESCRIPTION:
+    elif data == DESCRIPTION:
         set_user_state(user_id, DESCRIPTION_INPUT)
         await callback.message.answer(NEW_DESCRIPTION, reply_markup=types.ReplyKeyboardRemove())
-    elif data == CHANGE + LINK_PHOTO:
+    elif data == LINK_PHOTO:
         set_user_state(user_id, LOCATION_INPUT)
         await callback.message.answer(NEW_LINK_PHOTO, reply_markup=types.ReplyKeyboardRemove())

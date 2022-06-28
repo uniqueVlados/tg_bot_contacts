@@ -142,7 +142,7 @@ def set_user_description(user_id, description):
 
 
 def set_user_location(user_id, location):
-    """ Устанавливает описание пользователю """
+    """ Устанавливает местоположение пользователю """
     db = get_db()
     user = get_user_by_tg_id(user_id)
     user.location = location
