@@ -55,7 +55,7 @@ async def handle_agreement(message: types.Message, user_id, answer_):
 
 
 async def handle_name_input(message: types.Message, user_id, name):
-    bad_symbols = {' ', '\n', '\t', '\r', ',', '.', '/', '>', '<', '\\', '|', ':',
+    bad_symbols = {'\n', '\t', '\r', ',', '.', '/', '>', '<', '\\', '|', ':',
                    ';', '\'', '"', '`', '~', '!', '@', '#', '$', '%', '^', '&',
                    '*', '(', ')', '-', '_', '+', '=', '{', '}', '[', ']', '?', '№'}
     if bad_symbols & set(name) and len(name) > 30:
@@ -123,7 +123,8 @@ async def handle_docs_photo(message: types.Message):
     user_id = str(message.from_user.id)
     if get_user_state(user_id) == LINK_PHOTO:
         await message.answer(PHOTO__ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
-        await bot.get_file(message.photo[-1].download(user_id + ".jpg"))
+        photo_id = message.photo[0].file_id
+        set_user_link_photo(user_id, photo_id)
     else:
         await message.answer(PHOTO_ERROR, reply_markup=types.ReplyKeyboardRemove())
 

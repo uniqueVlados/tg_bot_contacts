@@ -145,3 +145,12 @@ def set_user_location(user_id, location):
     user.location = location
     db.commit()
 
+
+def set_user_link_photo(user_id, link):
+    """ Устанавливает описание пользователю """
+    db = get_db()
+    user = get_user_by_tg_id(user_id)
+    user.link_photo = link
+    db.commit()
+
+
