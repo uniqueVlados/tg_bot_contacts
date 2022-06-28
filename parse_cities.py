@@ -12,4 +12,6 @@ class Cities:
             cities.add(item["city"])
         return cities
 
+    def check_location(self, city):
+        return city in self.cities
 

@@ -60,21 +60,31 @@ async def handle_agreement(message: types.Message, user_id, answer_):
         await message.answer(AGREEMENT_MESSAGE, reply_markup=agreement_keyboard)
 
 
-async def handle_name_input(message: types.Message, user_id, name):
+def check_name(name):
     bad_symbols = {'\n', '\t', '\r', ',', '.', '/', '>', '<', '\\', '|', ':',
                    ';', '\'', '"', '`', '~', '!', '@', '#', '$', '%', '^', '&',
                    '*', '(', ')', '-', '_', '+', '=', '{', '}', '[', ']', '?', '№'}
+    if bad_symbols & set(name) or len(name) > 30:
+        return False
+    return True
+
+
+async def handle_name_input(message: types.Message, user_id, name):
     user = get_user_by_id(user_id)
-    if user and user.name:
-        set_user_name(user_id, name)
-        await message.answer(NEW_NAME_EDIT, reply_markup=types.ReplyKeyboardRemove())
-        set_user_state(user_id, WAIT_FOR_ACTION)
-    if bad_symbols & set(name) and len(name) > 30:
+    if not check_name(name):
         await message.answer(NAME_ERROR, reply_markup=types.ReplyKeyboardRemove())
-    else:
-        set_user_name(user_id, name)
-        await message.answer(NAME_ACCEPTED, reply_markup=gender_keyboard)
-        set_user_state(user_id, GENDER_INPUT)
+        return
+    state = GENDER_INPUT
+    ans = NAME_ACCEPTED
+    keyboard = gender_keyboard
+    if user and user.name:
+        state = WAIT_FOR_ACTION
+        ans = NEW_NAME_EDIT
+        keyboard = types.ReplyKeyboardRemove()
+    set_user_name(user_id, name)
+    set_user_state(user_id, state)
+    await message.answer(ans, reply_markup=keyboard)
+
 
 
 async def handle_gender(message: types.Message, user_id, gender):
@@ -105,17 +115,16 @@ async def handle_description_input(message: types.Message, user_id, description)
         set_user_state(user_id, LOCATION_INPUT)
 
 
-def check_location(city):
-    return city in cities
+
 
 
 async def handle_location_input(message: types.Message, user_id, location):
     user = get_user_by_id(user_id)
-    if user and user.location and check_location(location.capitalize()):
+    if user and user.location and cities.check_location(location.capitalize()):
         set_user_location(user_id, location)
         await message.answer(NEW_LOCATION_EDIT, reply_markup=types.ReplyKeyboardRemove())
         set_user_state(user_id, WAIT_FOR_ACTION)
-    if check_location(location.capitalize()):
+    if cities.check_location(location.capitalize()):
         set_user_location(user_id, location)
         await message.answer(LOCATION_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
         set_user_state(user_id, LINK_PHOTO_INPUT)
