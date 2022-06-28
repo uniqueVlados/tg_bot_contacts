@@ -8,6 +8,7 @@ class User(Base):
     __tablename__ = 'user'
 
     id = Column(Integer, nullable=False, unique=True, primary_key=True, autoincrement=True)
+    nickname = Column(String(20), nullable=False, unique=True, primary_key=True)
     name = Column(String(30))
     gender = Column(String(1))
     link_photo = Column(String(50))

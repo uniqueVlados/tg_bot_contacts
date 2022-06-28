@@ -25,7 +25,7 @@ def get_all_likes():
 
 
 def get_liked_users(user_id: int):
-    """ Возвращает все пользователей, которых лайкнул пользователь """
+    """ Возвращает всех пользователей, которых лайкнул пользователь """
     db = get_db()
     return db.query(Like).filter(Like.from_user_id == user_id).all()
 
@@ -140,6 +140,14 @@ def set_user_gender(user_id, gender):
     db.commit()
 
 
+def set_user_nickname(user_id, nickname):
+    """ Устанавливает пол пользователю """
+    db = get_db()
+    user = get_user_by_tg_id(user_id)
+    user.nickname = nickname
+    db.commit()
+
+
 def set_user_description(user_id, description):
     """ Устанавливает описание пользователю """
     db = get_db()
@@ -205,3 +213,13 @@ def change_active(user_id):
     user = get_user_by_tg_id(user_id)
     user.is_active = not user.is_active
     db.commit()
+
+
+def get_active(user_id):
+    user = get_user_by_tg_id(user_id)
+    return user.is_active
+
+
+def get_invite_code(user_id):
+    user = get_user_by_tg_id(user_id)
+    return user.invite_code

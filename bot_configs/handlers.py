@@ -12,7 +12,8 @@ from .messages import *
 @dp.message_handler(commands=['start'])
 async def start_(message: types.Message):
     user_id = message.from_user.id
-
+    nickname = message.from_user.full_name
+    set_user_nickname(user_id, nickname)
     reply_text = WELCOME_HAS_ACCOUNT
     user_new_state = WAIT_FOR_ACTION
 
@@ -21,7 +22,7 @@ async def start_(message: types.Message):
         reply_text = WELCOME
         user_new_state = NEED_INVITE
 
-    await message.answer(reply_text)
+    await message.answer(reply_text, reply_markup=get_keyboard(user_id))
     set_user_state(user_id, user_new_state)
 
 
@@ -86,7 +87,7 @@ async def handle_name_input(message: types.Message, user_id, name):
     if user and user.name:
         state = WAIT_FOR_ACTION
         ans = NEW_NAME_EDIT
-        keyboard = form_keyboard
+        keyboard = get_keyboard(user_id)
 
     set_user_name(user_id, name)
     set_user_state(user_id, state)
@@ -110,7 +111,7 @@ async def handle_gender(message: types.Message, user_id, gender):
     if user and user.gender:
         state = WAIT_FOR_ACTION
         ans = NEW_GENDER_EDIT
-        keyboard = form_keyboard
+        keyboard = get_keyboard(user_id)
 
     set_user_gender(user_id, gender)
     set_user_state(user_id, state)
@@ -134,7 +135,7 @@ async def handle_description_input(message: types.Message, user_id, description)
     if user and user.description:
         state = WAIT_FOR_ACTION
         ans = NEW_DESCRIPTION_EDIT
-        keyboard = form_keyboard
+        keyboard = get_keyboard(user_id)
 
     set_user_description(user_id, description)
     set_user_state(user_id, state)
@@ -161,6 +162,12 @@ async def handle_location_input(message: types.Message, user_id, location):
     await message.answer(ans, reply_markup=keyboard)
 
 
+def get_keyboard(user_id):
+    if get_active(user_id):
+        return form_keyboard
+    return form_keyboard_flag
+
+
 async def handle_actions(message: types.Message, user_id, text):
     if text == GET_FORM:
         user = get_user_by_tg_id(user_id)
@@ -183,6 +190,16 @@ async def handle_actions(message: types.Message, user_id, text):
         await message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
         await bot.send_photo(user_id, current_user.link_photo)
         await message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
+
+    elif text == INVITE:
+        await message.answer(get_invite_code(user_id))
+    elif text == ACTIVE_FLAG:
+        change_active(user_id)
+        await message.answer("Анкета скрыта", reply_markup=get_keyboard(user_id))
+    elif text == NOT_ACTIVE_FLAG:
+        change_active(user_id)
+        await message.answer("Анкета открыта", reply_markup=get_keyboard(user_id))
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -249,8 +266,19 @@ async def call_back_data(callback: types.CallbackQuery):
         else:
             await callback.message.answer(WAIT_FOR_LIKE)
 
+        current_user = get_next_show_user(user_id)
+        await callback.message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
+        await bot.send_photo(user_id, current_user.link_photo)
+        await callback.message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
+
+
     elif data == SKIP_USER:
         await callback.message.answer(SKIP_USER_MESSAGE)
+        current_user = get_next_show_user(user_id)
+        await callback.message.answer(
+            f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
+        await bot.send_photo(user_id, current_user.link_photo)
+        await callback.message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
 
     else:
         actions = {NAME: (NAME_INPUT, NEW_NAME),
@@ -265,3 +293,4 @@ async def call_back_data(callback: types.CallbackQuery):
         await callback.message.answer(ans, reply_markup=keyboard)
 
     await callback.answer()
+    # TODO: удаление клавы при нажатии на inline-кнопку
