@@ -121,17 +121,27 @@ def set_user_name(user_id, name):
     db.commit()
 
 
-def set_user_last_name(user_id, last_name):
-    """ Устанавливает фамилию пользователя """
-    db = get_db()
-    user = get_user_by_tg_id(user_id)
-    user.last_name = last_name
-    db.commit()
-
-
 def set_user_gender(user_id, gender):
     """ Устанавливает пол пользователю """
     db = get_db()
     user = get_user_by_tg_id(user_id)
     user.gender = gender
     db.commit()
+
+
+def set_user_description(user_id, description):
+    """ Устанавливает описание пользователю """
+    db = get_db()
+    user = get_user_by_tg_id(user_id)
+    user.description = description
+    db.commit()
+
+
+
+def set_user_location(user_id, location):
+    """ Устанавливает описание пользователю """
+    db = get_db()
+    user = get_user_by_tg_id(user_id)
+    user.location = location
+    db.commit()
+

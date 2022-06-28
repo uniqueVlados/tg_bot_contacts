@@ -18,9 +18,6 @@ agreement_disagree = KeyboardButton(DISAGREE)
 woman_gender = KeyboardButton(WOMAN)
 man_gender = KeyboardButton(MAN)
 
-love_woman_gender = KeyboardButton(LOVE_WOMAN)
-love_man_gender = KeyboardButton(LOVE_MAN)
-love_neutral_gender = KeyboardButton(NEUTRAL)
 
 # in_btn_1 = KeyboardButton(SHOW)
 # in_btn_2 = KeyboardButton(DONT_SHOW)
@@ -40,8 +37,6 @@ agreement_link_keyboard.add(link_agreement)
 gender_keyboard = ReplyKeyboardMarkup()
 gender_keyboard.add(woman_gender, man_gender)
 
-love_gender_keyboard = ReplyKeyboardMarkup()
-love_gender_keyboard.add(love_woman_gender, love_man_gender, love_neutral_gender)
 
 # in_k = InlineKeyboardMarkup()
 # in_k.add(in_btn_1, in_btn_2)

@@ -6,6 +6,8 @@ from aiogram import types
 from states import *
 from parse_cities import Cities
 from .config import ConfigData
+from database.operations import *
+from . import cities, bot
 
 
 @dp.message_handler(commands=['start'])
@@ -43,8 +45,8 @@ async def handle_agreement(message: types.Message, user_id, answer_):
     if answer_ == AGREE:
         await message.answer(AGREEMENT_ACCEPTED)
         await message.answer(CREATE_ACCOUNT)
-        set_user_state(message.from_user.id, NAME_INPUT)
-    elif answer_  == DISAGREE:
+        set_user_state(user_id, NAME_INPUT)
+    elif answer_ == DISAGREE:
         await message.answer(AGREEMENT_NOT_ACCEPTED)
         await message.answer(AGREEMENT_MESSAGE, reply_markup=agreement_keyboard)
     else:
@@ -57,53 +59,42 @@ async def handle_name_input(message: types.Message, user_id, name):
                    ';', '\'', '"', '`', '~', '!', '@', '#', '$', '%', '^', '&',
                    '*', '(', ')', '-', '_', '+', '=', '{', '}', '[', ']', '?', '№'}
     if bad_symbols & set(name) and len(name) > 30:
-        await message.answer(NAME_ERROR, eply_markup=types.ReplyKeyboardRemove())
+        await message.answer(NAME_ERROR, reply_markup=types.ReplyKeyboardRemove())
     else:
+        set_user_name(user_id, name)
         await message.answer(NAME_ACCEPTED, reply_markup=gender_keyboard)
         set_user_state(user_id, GENDER)
 
 
 async def handle_gender(message: types.Message, user_id, gender):
     if gender == WOMAN or gender == MAN:
-        await message.answer(GENDER_ACCEPTED, reply_markup=love_gender_keyboard)
-        set_user_state(message.from_user.id, LOVE_GENDER)
+        set_user_gender(user_id, gender)
+        await message.answer(GENDER_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
+        set_user_state(user_id, LOVE_GENDER)
     else:
         await message.answer(ERROR_KEYBOARD, reply_markup=gender_keyboard)
 
 
-async def handle_love_gender(message: types.Message, user_id, love_gender):
-    if love_gender in [LOVE_WOMAN, LOVE_MAN, NEUTRAL]:
-        await message.answer(LOVE_GENDER_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
-        set_user_state(message.from_user.id, DESCRIPTION)
-    else:
-        await message.answer(ERROR_KEYBOARD, reply_markup=love_gender_keyboard)
-
-
 async def handle_description_input(message: types.Message, user_id, description):
-    if  len(description) > 200:
+    if len(description) > 200:
         await message.answer(DESC_ERROR, reply_markup=types.ReplyKeyboardRemove())
     else:
+        set_user_description(user_id, description)
         await message.answer(DESK_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
         set_user_state(user_id, LOCATION)
 
 
 def check_location(city):
-    config_data = ConfigData()
-    cities = Cities(config_data.FILENAME_CITIES)
-    if city in cities.get_cities():
-        return True
-    return False
+    return city in cities
 
 
 async def handle_location_input(message: types.Message, user_id, location):
-    if  check_location(location.capitalize()):
+    if check_location(location.capitalize()):
+        set_user_location(user_id, location)
         await message.answer(LOCATION_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
         set_user_state(user_id, LINK_PHOTO)
     else:
         await message.answer(LOCATION_ERROR, reply_markup=types.ReplyKeyboardRemove())
-
-
-
 
 
 # обработчик текстовых сообщений
@@ -117,15 +108,25 @@ async def handle_messages(message: types.Message):
                         NEED_AGREEMENT: handle_agreement,
                         NAME_INPUT: handle_name_input,
                         GENDER: handle_gender,
-                        LOVE_GENDER: handle_love_gender,
-                        DESCRIPTION:handle_description_input,
-                        LOCATION:  handle_location_input,
-                        # LINK_PHOTO: TODO: Откуда будем брать фотку? (Загрузить или просто ссылка)
+                        DESCRIPTION: handle_description_input,
+                        LOCATION: handle_location_input,
                         }
 
     function = handle_functions.get(state)
     if function:
         await function(message, user_id, text)
+
+
+# Обработчик для получения фото
+@dp.message_handler(content_types=['photo'])
+async def handle_docs_photo(message: types.Message):
+    user_id = str(message.from_user.id)
+    if get_user_state(user_id) == LINK_PHOTO:
+        await message.answer(PHOTO__ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
+        await bot.get_file(message.photo[-1].download(user_id + ".jpg"))
+    else:
+        await message.answer(PHOTO_ERROR, reply_markup=types.ReplyKeyboardRemove())
+
 
 
 # Обработчик для inline-кнопок
@@ -143,6 +144,3 @@ async def handle_messages(message: types.Message):
 #     elif data == DISAGREE:
 #         await callback.message.answer(AGREEMENT_NOT_ACCEPTED)
 #         await callback.message.answer(AGREEMENT_MESSAGE, reply_markup=agreement_keyboard)
-
-
-

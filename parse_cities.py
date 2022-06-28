@@ -4,11 +4,12 @@ import json
 class Cities:
     def __init__(self, filename):
         self.cities_dict = json.loads(open(filename, "r", encoding="UTF-8").read())
+        self.cities = self.get_cities()
 
     def get_cities(self):
-        cities = []
+        cities = set()
         for item in self.cities_dict:
-            cities.append(item["city"])
+            cities.add(item["city"])
         return cities
 
 
