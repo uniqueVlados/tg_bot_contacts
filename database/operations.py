@@ -3,12 +3,19 @@ from database.models import User, Like, State
 from . import get_db
 
 
-def create_like(from_user_id: int, to_user_id: int):
-    """Создает лайк между пользователями """
-    like = Like(from_user_id=from_user_id, to_user_id=to_user_id)
+def check_like(from_user_id: int, to_user_id: int):
+    """ Проверяет лайк на взаимность между пользователями """
     db = get_db()
+    mutual_like = db.query(Like).filter((Like.from_user_id == to_user_id) & (Like.to_user_id == from_user_id)).first()
+    if mutual_like:
+        db.delete(mutual_like)
+        db.commit()
+        return True
+
+    like = Like(from_user_id=from_user_id, to_user_id=to_user_id)
     db.add(like)
     db.commit()
+    return False
 
 
 def get_all_likes():
@@ -155,3 +162,17 @@ def set_user_link_photo(user_id, link):
     user = get_user_by_tg_id(user_id)
     user.link_photo = link
     db.commit()
+
+
+def get_next_show_user(user_id: int):
+    """ Получает следующего пользователя для показа """
+    db = get_db()
+    user = get_user_by_tg_id(user_id)
+    next_user = user.next_show_user
+    user.show_user_id += 1
+    if user.show_user_id > len(get_all_users()):
+        user.show_user_id = 1
+    db.commit()
+    return next_user
+
+

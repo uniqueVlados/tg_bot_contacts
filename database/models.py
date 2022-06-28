@@ -19,6 +19,7 @@ class User(Base):
     likes_from = relationship("Like", back_populates="user_from", foreign_keys="Like.from_user_id")
     likes_to = relationship("Like", back_populates="user_to", foreign_keys="Like.to_user_id")
     state = relationship("State", back_populates="user", foreign_keys="State.user_id")
+    next_show_user = relationship("User", foreign_keys="User.show_user_id")
 
     def __repr__(self):
         return f"<User({self.id} {self.name},{self.last_name})>"
