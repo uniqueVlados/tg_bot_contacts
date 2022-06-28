@@ -1,4 +1,4 @@
-from messages import *
+from .messages import *
 from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardMarkup, KeyboardButton, InlineKeyboardButton
 from .config import ConfigData
 

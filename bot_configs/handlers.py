@@ -1,13 +1,10 @@
-from database.operations import *
 from . import dp
-from .keyboards import agreement_keyboard, agreement_link_keyboard, gender_keyboard, form_keyboard, edit_keyboard
-from .messages import *
 from aiogram import types
-from states import *
-from parse_cities import Cities
-from .config import ConfigData
+from .states import *
 from database.operations import *
 from . import cities, bot
+from .keyboards import *
+from .messages import *
 
 
 @dp.message_handler(commands=['start'])
@@ -68,7 +65,7 @@ async def handle_name_input(message: types.Message, user_id, name):
                    ';', '\'', '"', '`', '~', '!', '@', '#', '$', '%', '^', '&',
                    '*', '(', ')', '-', '_', '+', '=', '{', '}', '[', ']', '?', '№'}
     user = get_user_by_id(user_id)
-    if user.name is not None:
+    if user and user.name:
         set_user_name(user_id, name)
         await message.answer(NEW_NAME_EDIT, reply_markup=types.ReplyKeyboardRemove())
         set_user_state(user_id, WAIT_FOR_ACTION)
@@ -82,7 +79,7 @@ async def handle_name_input(message: types.Message, user_id, name):
 
 async def handle_gender(message: types.Message, user_id, gender):
     user = get_user_by_id(user_id)
-    if user.gender is not None:
+    if user and user.gender:
         set_user_gender(user_id, gender)
         await message.answer(NEW_GENDER_EDIT, reply_markup=types.ReplyKeyboardRemove())
         set_user_state(user_id, WAIT_FOR_ACTION)
@@ -96,7 +93,7 @@ async def handle_gender(message: types.Message, user_id, gender):
 
 async def handle_description_input(message: types.Message, user_id, description):
     user = get_user_by_id(user_id)
-    if user.description is not None:
+    if user and user.description:
         set_user_description(user_id, description)
         await message.answer(NEW_DESCRIPTION_EDIT, reply_markup=types.ReplyKeyboardRemove())
         set_user_state(user_id, WAIT_FOR_ACTION)
@@ -114,7 +111,7 @@ def check_location(city):
 
 async def handle_location_input(message: types.Message, user_id, location):
     user = get_user_by_id(user_id)
-    if user.location is not None and check_location(location.capitalize()):
+    if user and user.location and check_location(location.capitalize()):
         set_user_location(user_id, location)
         await message.answer(NEW_LOCATION_EDIT, reply_markup=types.ReplyKeyboardRemove())
         set_user_state(user_id, WAIT_FOR_ACTION)
@@ -152,7 +149,7 @@ async def handle_docs_photo(message: types.Message):
     user_id = str(message.from_user.id)
     photo_id = message.photo[0].file_id
     user = get_user_by_id(user_id)
-    if user.link_photo is not None:
+    if user and user.link_photo:
         set_user_link_photo(user_id, photo_id)
         await message.answer(NEW_LINK_PHOTO_EDIT, reply_markup=types.ReplyKeyboardRemove())
         set_user_state(user_id, WAIT_FOR_ACTION)

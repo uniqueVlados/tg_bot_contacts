@@ -1,5 +1,4 @@
 import secrets
-
 from database.models import User, Like, State
 from . import get_db
 
@@ -115,6 +114,8 @@ def set_user_name(user_id, name):
     user = get_user_by_tg_id(user_id)
     if not user:
         user = User(name=name, invite_code=create_invite_code())
+        state = db.query(State).filter(State.tg_id == user_id).first()
+        state.user_id = user.id
         db.add(user)
 
     user.name = name
@@ -137,7 +138,6 @@ def set_user_description(user_id, description):
     db.commit()
 
 
-
 def set_user_location(user_id, location):
     """ Устанавливает описание пользователю """
     db = get_db()
@@ -152,5 +152,3 @@ def set_user_link_photo(user_id, link):
     user = get_user_by_tg_id(user_id)
     user.link_photo = link
     db.commit()
-
-

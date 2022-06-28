@@ -39,7 +39,7 @@ class Like(Base):
 
 
 class State(Base):
-    __tablename__ = 'like'
+    __tablename__ = 'state'
 
     tg_id = Column(String(9), nullable=False, unique=True, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'))
