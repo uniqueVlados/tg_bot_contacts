@@ -18,11 +18,10 @@ class User(Base):
 
     likes_from = relationship("Like", back_populates="user_from", foreign_keys="Like.from_user_id")
     likes_to = relationship("Like", back_populates="user_to", foreign_keys="Like.to_user_id")
-    state = relationship("State", back_populates="user", foreign_keys="State.user_id")
-    next_show_user = relationship("User", foreign_keys="User.show_user_id")
+    state = relationship("State", back_populates="user", foreign_keys="State.user_id", uselist=False)
 
     def __repr__(self):
-        return f"<User({self.id} {self.name},{self.last_name})>"
+        return f"<User({self.id} {self.name})>"
 
 
 class Like(Base):
@@ -32,8 +31,8 @@ class Like(Base):
     from_user_id = Column(Integer, ForeignKey('user.id'))
     to_user_id = Column(Integer, ForeignKey('user.id'))
 
-    user_from = relationship("User", foreign_keys=[from_user_id], back_populates="likes_from")
-    user_to = relationship("User", foreign_keys=[to_user_id], back_populates="likes_to")
+    user_from = relationship("User", foreign_keys=[from_user_id], back_populates="likes_from", uselist=False)
+    user_to = relationship("User", foreign_keys=[to_user_id], back_populates="likes_to", uselist=False)
 
     def __repr__(self):
         return f"<Like({self.subject} to {self.object})>"
@@ -46,7 +45,7 @@ class State(Base):
     user_id = Column(Integer, ForeignKey('user.id'))
     value = Column(String(10))
 
-    user = relationship("User", back_populates="state")
+    user = relationship("User", back_populates="state", uselist=False)
 
     def __repr__(self):
         return f"<State({self.tg_id} {self.value})>"

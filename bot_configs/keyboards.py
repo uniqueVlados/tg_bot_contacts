@@ -20,7 +20,7 @@ man_gender = KeyboardButton(MAN)
 
 get_form = InlineKeyboardMarkup(text=GET_FORM, callback_data=GET_FORM)
 edit_form = InlineKeyboardMarkup(text=EDIT_FORM, callback_data=EDIT_FORM)
-wall_users = InlineKeyboardMarkup(text=WALL_USERS, callback_data=WALL_USERS)
+wall_users = InlineKeyboardMarkup(text=SHOW_USERS, callback_data=SHOW_USERS)
 
 name_edit = InlineKeyboardMarkup(text=NAME, callback_data=NAME)
 gender_edit = InlineKeyboardMarkup(text=GENDER, callback_data=GENDER)
@@ -50,7 +50,7 @@ agreement_link_keyboard.add(link_agreement)
 gender_keyboard = ReplyKeyboardMarkup()
 gender_keyboard.add(woman_gender, man_gender)
 
-form_keyboard = InlineKeyboardMarkup()
+form_keyboard = ReplyKeyboardMarkup()
 form_keyboard.add(get_form, edit_form, wall_users)
 
 edit_keyboard = InlineKeyboardMarkup()
@@ -60,6 +60,13 @@ edit_keyboard.add(name_edit, gender_edit, location_edit, description_edit, link_
 user_keyboard = ReplyKeyboardMarkup()
 user_keyboard.add(love_user, skip_user, pause_user)
 
-# in_k = InlineKeyboardMarkup()
-# in_k.add(in_btn_1, in_btn_2)
+
+def create_inline_keyboard(to_user_id):
+    love_user_ = InlineKeyboardButton(LOVE_USER, callback_data=to_user_id)
+    skip_user_ = InlineKeyboardButton(SKIP_USER, callback_data=SKIP_USER)
+    pause_user_ = InlineKeyboardButton(PAUSE_USER, callback_data=PAUSE_USER)
+
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(love_user_, skip_user_, pause_user_)
+    return keyboard
 

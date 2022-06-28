@@ -7,6 +7,8 @@ from .keyboards import *
 from .messages import *
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------КОМАНДЫ--------------------------------------------------------------
 @dp.message_handler(commands=['start'])
 async def start_(message: types.Message):
     user_id = message.from_user.id
@@ -30,8 +32,10 @@ async def get_form_(message: types.Message):
     set_user_state(user_id, WAIT_FOR_ACTION)
     await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
     await bot.send_photo(user_id, user.link_photo)
+# ----------------------------------------------------------------------------------------------------------------------
 
 
+# -------------------------------------------------АНКЕТА---------------------------------------------------------------
 async def handle_invite_code(message: types.Message, user_id, invite_code):
     agreement_mess = None
     answer = NOT_CHECK_INVITE
@@ -74,13 +78,16 @@ async def handle_name_input(message: types.Message, user_id, name):
     if not check_name(name):
         await message.answer(NAME_ERROR, reply_markup=types.ReplyKeyboardRemove())
         return
+
     state = GENDER_INPUT
     ans = NAME_ACCEPTED
     keyboard = gender_keyboard
+
     if user and user.name:
         state = WAIT_FOR_ACTION
         ans = NEW_NAME_EDIT
         keyboard = form_keyboard
+
     set_user_name(user_id, name)
     set_user_state(user_id, state)
     await message.answer(ans, reply_markup=keyboard)
@@ -95,13 +102,16 @@ async def handle_gender(message: types.Message, user_id, gender):
     if not check_gender(gender):
         await message.answer(ERROR_KEYBOARD, reply_markup=gender_keyboard)
         return
+
     state = DESCRIPTION_INPUT
     ans = GENDER_ACCEPTED
     keyboard = types.ReplyKeyboardRemove()
+
     if user and user.gender:
         state = WAIT_FOR_ACTION
         ans = NEW_GENDER_EDIT
         keyboard = form_keyboard
+
     set_user_gender(user_id, gender)
     set_user_state(user_id, state)
     await message.answer(ans, reply_markup=keyboard)
@@ -116,13 +126,16 @@ async def handle_description_input(message: types.Message, user_id, description)
     if not check_description(description):
         await message.answer(DESC_ERROR, reply_markup=types.ReplyKeyboardRemove())
         return
+
     state = LOCATION_INPUT
     ans = DESK_ACCEPTED
     keyboard = types.ReplyKeyboardRemove()
+
     if user and user.description:
         state = WAIT_FOR_ACTION
         ans = NEW_DESCRIPTION_EDIT
         keyboard = form_keyboard
+
     set_user_description(user_id, description)
     set_user_state(user_id, state)
     await message.answer(ans, reply_markup=keyboard)
@@ -133,41 +146,47 @@ async def handle_location_input(message: types.Message, user_id, location):
     if not cities.check_location(location.capitalize()):
         await message.answer(LOCATION_ERROR, reply_markup=types.ReplyKeyboardRemove())
         return
+
     state = LINK_PHOTO_INPUT
     ans = LOCATION_ACCEPTED
     keyboard = types.ReplyKeyboardRemove()
+
     if user and user.location:
         state = WAIT_FOR_ACTION
         ans = NEW_LOCATION_EDIT
         keyboard = form_keyboard
+
     set_user_location(user_id, location)
     set_user_state(user_id, state)
     await message.answer(ans, reply_markup=keyboard)
 
 
-async def handle_watch_form(message: types.Message, user_id, text):
-    current_user = get_next_show_user(user_id)
-    await message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
-    await bot.send_photo(user_id, current_user.link_photo)
-    await message.answer("Выберите действие ниже", reply_markup=user_keyboard)
-    if message.text == LOVE_USER:
-        if check_like(user_id, current_user.id):
-            await message.answer(f"{MEETING}\n{current_user.id}")
-            await bot.send_photo(user_id, current_user.link_photo)
-        # запоминать этот лайк
-        # Как проверять, что у тебя есть лайки
-    elif message.text == SKIP_USER:
-        pass_show_user(user_id)
-        await message.answer(SKIP_INFO, reply_markup=user_keyboard)
-    if message.text == PAUSE_USER:
+async def handle_actions(message: types.Message, user_id, text):
+    if text == GET_FORM:
+        user = get_user_by_tg_id(user_id)
+        if not user:
+            await message.answer(ERROR_KEYBOARD)
+            return
+        await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
+        await bot.send_photo(user_id, user.link_photo)
+
+    elif text == EDIT_FORM:
         set_user_state(user_id, WAIT_FOR_ACTION)
-        await message.answer(PAUSE_INFO, reply_markup=form_keyboard)
+        await message.answer(FORM_INFO, reply_markup=edit_keyboard)
+
+    elif text == SHOW_USERS:
+        current_user = get_next_show_user(user_id)
+        if not current_user:
+            await message.answer(NOT_ENOUGH_USERS)
+            return
+
+        await message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
+        await bot.send_photo(user_id, current_user.link_photo)
+        await message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
+# ----------------------------------------------------------------------------------------------------------------------
 
 
-
-
-
-# обработчик текстовых сообщений
+# -------------------------------------------------ОБРАБОТЧИК ТЕКСТА----------------------------------------------------
 @dp.message_handler()
 async def handle_messages(message: types.Message):
     user_id = message.from_user.id
@@ -180,15 +199,16 @@ async def handle_messages(message: types.Message):
                         GENDER_INPUT: handle_gender,
                         DESCRIPTION_INPUT: handle_description_input,
                         LOCATION_INPUT: handle_location_input,
-                        WATCH_FORM: handle_watch_form,
+                        WAIT_FOR_ACTION: handle_actions,
                         }
 
     function = handle_functions.get(state)
     if function:
         await function(message, user_id, text)
+# ----------------------------------------------------------------------------------------------------------------------
 
 
-# Обработчик для получения фото
+# -------------------------------------------------ОБРАБОТЧИК ФОТО------------------------------------------------------
 @dp.message_handler(content_types=['photo'])
 async def handle_docs_photo(message: types.Message):
     user_id = str(message.from_user.id)
@@ -210,27 +230,27 @@ async def handle_docs_photo(message: types.Message):
     await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
     await bot.send_photo(user_id, user.link_photo)
     await message.answer("Выберите действие ниже", reply_markup=form_keyboard)
+# ----------------------------------------------------------------------------------------------------------------------
 
 
-# Обработчик для inline-кнопок
+# -------------------------------------------------ОБРАБОТЧИК INLINE_BUTTON---------------------------------------------
 @dp.callback_query_handler()
 async def call_back_data(callback: types.CallbackQuery):
     data = callback.data
     user_id = callback.from_user.id
 
-    if data == GET_FORM:
-        user = get_user_by_tg_id(user_id)
-        set_user_state(user_id, WAIT_FOR_ACTION)
-        await callback.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
-        await bot.send_photo(user_id, user.link_photo)
-        await callback.message.answer("Выберите действие ниже", reply_markup=form_keyboard)
+    if str(data).isdigit():
+        user = get_user_by_id(data)
+        tg_user = user.state
 
-    elif data == EDIT_FORM:
-        set_user_state(user_id, WAIT_FOR_ACTION)
-        await callback.message.answer(FORM_INFO, reply_markup=edit_keyboard)
+        if check_like(user_id, tg_user.tg_id):
+            await callback.message.answer(f"{MEETING}\n{user.state.tg_id}")
+            await bot.send_message(tg_user.tg_id, f"{MEETING}\n{user_id}")
+        else:
+            await callback.message.answer(WAIT_FOR_LIKE)
 
-    elif data == WATCH_FORM:
-        set_user_state(user_id, WATCH_FORM)
+    elif data == SKIP_USER:
+        await callback.message.answer(SKIP_USER_MESSAGE)
 
     else:
         actions = {NAME: (NAME_INPUT, NEW_NAME),

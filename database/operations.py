@@ -167,21 +167,23 @@ def set_user_link_photo(user_id, link):
 def get_next_show_user(user_id: int):
     """ Получает следующего пользователя для показа """
     db = get_db()
+    all_users_count = db.query(User).count()
+    if all_users_count < 4:
+        return None
+
     user = get_user_by_tg_id(user_id)
-    next_user = user.next_show_user
-    user.show_user_id += 1
-    if user.show_user_id > len(get_all_users()):
+    if not user.show_user_id:
         user.show_user_id = 1
+
+    next_user = db.query(User).filter(User.id == user.show_user_id).first()
+    user.show_user_id += 1
+
+    if user.show_user_id == user.id:
+        user.show_user_id += 1
+
+    if user.show_user_id > all_users_count - 1:
+        user.show_user_id = 1
+
     db.commit()
     return next_user
-
-
-def pass_show_user(user_id: int):
-    """ Пропускает пользователя для показа """
-    db = get_db()
-    user = get_user_by_tg_id(user_id)
-    user.show_user_id += 1
-    if user.show_user_id > len(get_all_users()):
-        user.show_user_id = 1
-    db.commit()
 
