@@ -168,6 +168,8 @@ def get_next_show_user(user_id: int):
     """ Получает следующего пользователя для показа """
     db = get_db()
     all_users_count = db.query(User).count()
+    all_active_users = db.query(User).filter(User.is_active == True).count()
+
     if all_users_count < 4:
         return None
 
@@ -176,14 +178,30 @@ def get_next_show_user(user_id: int):
         user.show_user_id = 1
 
     next_user = db.query(User).filter(User.id == user.show_user_id).first()
+
+    counter = 0
     user.show_user_id += 1
-
-    if user.show_user_id == user.id:
+    while (not db.query(User).filter(User.id == user.show_user_id).first().is_active
+           or user.show_user_id == user.id) and all_active_users > 0:
         user.show_user_id += 1
+        if user.show_user_id > all_users_count - 1:
+            user.show_user_id = 1
+        counter += 1
+        if counter >= all_users_count:
+            return None
 
-    if user.show_user_id > all_users_count - 1:
-        user.show_user_id = 1
+    # if user.show_user_id == user.id:
+    #     user.show_user_id += 1
+    #
+    # if user.show_user_id > all_users_count - 1:
+    #     user.show_user_id = 1
 
     db.commit()
     return next_user
 
+
+def change_active(user_id):
+    db = get_db()
+    user = get_user_by_tg_id(user_id)
+    user.is_active = not user.is_active
+    db.commit()

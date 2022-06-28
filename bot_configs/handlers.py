@@ -214,7 +214,7 @@ async def handle_docs_photo(message: types.Message):
     user_id = str(message.from_user.id)
     photo_id = message.photo[0].file_id
     user = get_user_by_tg_id(user_id)
-    state = LINK_PHOTO_INPUT
+    state = WAIT_FOR_ACTION
     ans = PHOTO_ACCEPTED
     keyboard = types.ReplyKeyboardRemove()
 

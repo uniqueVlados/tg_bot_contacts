@@ -47,26 +47,26 @@ agreement_keyboard.add(agreement_agree, agreement_disagree)
 agreement_link_keyboard = InlineKeyboardMarkup()
 agreement_link_keyboard.add(link_agreement)
 
-gender_keyboard = ReplyKeyboardMarkup()
+gender_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 gender_keyboard.add(woman_gender, man_gender)
 
-form_keyboard = ReplyKeyboardMarkup()
+form_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 form_keyboard.add(get_form, edit_form, wall_users)
 
 edit_keyboard = InlineKeyboardMarkup()
 edit_keyboard.add(name_edit, gender_edit, location_edit, description_edit, link_photo_edit)
 
 
-user_keyboard = ReplyKeyboardMarkup()
+user_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 user_keyboard.add(love_user, skip_user, pause_user)
 
 
 def create_inline_keyboard(to_user_id):
     love_user_ = InlineKeyboardButton(LOVE_USER, callback_data=to_user_id)
     skip_user_ = InlineKeyboardButton(SKIP_USER, callback_data=SKIP_USER)
-    pause_user_ = InlineKeyboardButton(PAUSE_USER, callback_data=PAUSE_USER)
+    # pause_user_ = InlineKeyboardButton(PAUSE_USER, callback_data=PAUSE_USER)
 
     keyboard = InlineKeyboardMarkup()
-    keyboard.add(love_user_, skip_user_, pause_user_)
+    keyboard.add(love_user_, skip_user_)
     return keyboard
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String,  ForeignKey, Date, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text, Boolean
 from sqlalchemy.orm import relationship
 
 from . import Base
@@ -15,6 +15,7 @@ class User(Base):
     location = Column(String(50))
     invite_code = Column(String(8))
     show_user_id = Column(Integer, ForeignKey("user.id"))
+    is_active = Column(Boolean, default=True)
 
     likes_from = relationship("Like", back_populates="user_from", foreign_keys="Like.from_user_id")
     likes_to = relationship("Like", back_populates="user_to", foreign_keys="Like.to_user_id")
