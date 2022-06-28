@@ -13,8 +13,8 @@ class User(Base):
     link_photo = Column(String(50))
     description = Column(Text(200))
     location = Column(String(50))
-    # is_active = Column(Boolean)
     invite_code = Column(String(8))
+    show_user_id = Column(Integer, ForeignKey("user.id"))
 
     likes_from = relationship("Like", back_populates="user_from", foreign_keys="Like.from_user_id")
     likes_to = relationship("Like", back_populates="user_to", foreign_keys="Like.to_user_id")
@@ -44,6 +44,7 @@ class State(Base):
     tg_id = Column(String(9), nullable=False, unique=True, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     value = Column(String(10))
+
     user = relationship("User", back_populates="state")
 
     def __repr__(self):

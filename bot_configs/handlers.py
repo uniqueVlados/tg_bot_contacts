@@ -170,18 +170,14 @@ async def handle_docs_photo(message: types.Message):
     if user and user.link_photo:
         state = WAIT_FOR_ACTION
         ans = NEW_LINK_PHOTO_EDIT
+
     set_user_link_photo(user_id, photo_id)
-    await message.answer(PHOTO_ACCEPTED, reply_markup=types.ReplyKeyboardRemove())
-    set_user_link_photo(user_id, photo_id)
-    user = get_user_by_tg_id(user_id)
-    set_user_state(user_id, WAIT_FOR_ACTION)
+    await message.answer(ans, reply_markup=types.ReplyKeyboardRemove())
+    set_user_state(user_id, state)
+
     await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
     await bot.send_photo(user_id, user.link_photo)
     await message.answer("Выберите действие ниже", reply_markup=form_keyboard)
-
-
-
-
 
 
 # Обработчик для inline-кнопок
@@ -193,7 +189,6 @@ async def call_back_data(callback: types.CallbackQuery):
     if data == GET_FORM:
         await callback.message.answer(f"Анкета подтверждена", reply_markup=types.ReplyKeyboardRemove())
     elif data == EDIT_FORM:
-        user = get_user_by_tg_id(user_id)
         set_user_state(user_id, WAIT_FOR_ACTION)
         await callback.message.answer(FORM_INFO, reply_markup=edit_keyboard)
 
