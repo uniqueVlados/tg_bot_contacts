@@ -223,26 +223,25 @@ async def call_back_data(callback: types.CallbackQuery):
         set_user_state(user_id, WAIT_FOR_ACTION)
         await callback.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
         await bot.send_photo(user_id, user.link_photo)
-        await callback.answer("Выберите действие ниже", reply_markup=form_keyboard)
+        await callback.message.answer("Выберите действие ниже", reply_markup=form_keyboard)
+
     elif data == EDIT_FORM:
-        user = get_user_by_tg_id(user_id)
         set_user_state(user_id, WAIT_FOR_ACTION)
         await callback.message.answer(FORM_INFO, reply_markup=edit_keyboard)
+
     elif data == WATCH_FORM:
-        user = get_user_by_tg_id(user_id)
         set_user_state(user_id, WATCH_FORM)
-    elif data == NAME:
-        set_user_state(user_id, NAME_INPUT)
-        await callback.message.answer(NEW_NAME, reply_markup=types.ReplyKeyboardRemove())
-    elif data == GENDER:
-        set_user_state(user_id, GENDER_INPUT)
-        await callback.message.answer(NEW_GENDER, reply_markup=types.ReplyKeyboardRemove())
-    elif data == LOCATION:
-        set_user_state(user_id, LOCATION_INPUT)
-        await callback.message.answer(NEW_LOCATION, reply_markup=types.ReplyKeyboardRemove())
-    elif data == DESCRIPTION:
-        set_user_state(user_id, DESCRIPTION_INPUT)
-        await callback.message.answer(NEW_DESCRIPTION, reply_markup=types.ReplyKeyboardRemove())
-    elif data == LINK_PHOTO:
-        set_user_state(user_id, LOCATION_INPUT)
-        await callback.message.answer(NEW_LINK_PHOTO, reply_markup=types.ReplyKeyboardRemove())
+
+    else:
+        actions = {NAME: (NAME_INPUT, NEW_NAME),
+                   GENDER: (GENDER_INPUT, NEW_GENDER),
+                   LOCATION: (LOCATION_INPUT, NEW_LOCATION),
+                   DESCRIPTION: (DESCRIPTION_INPUT, NEW_DESCRIPTION),
+                   LINK_PHOTO: (LINK_PHOTO_INPUT, NEW_LINK_PHOTO)}
+        state, ans = actions.get(data)
+        set_user_state(user_id, state)
+
+        keyboard = types.ReplyKeyboardRemove() if data != GENDER else gender_keyboard
+        await callback.message.answer(ans, reply_markup=keyboard)
+
+    await callback.answer()
