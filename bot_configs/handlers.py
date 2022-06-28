@@ -197,22 +197,19 @@ async def handle_docs_photo(message: types.Message):
     state = LINK_PHOTO_INPUT
     ans = PHOTO_ACCEPTED
     keyboard = types.ReplyKeyboardRemove()
+
     if user and user.link_photo:
         state = WAIT_FOR_ACTION
         ans = NEW_LINK_PHOTO_EDIT
         keyboard = form_keyboard
+
     set_user_link_photo(user_id, photo_id)
-    await message.answer(PHOTO_ACCEPTED, reply_markup=keyboard)
-    set_user_link_photo(user_id, photo_id)
-    user = get_user_by_tg_id(user_id)
-    set_user_state(user_id, WAIT_FOR_ACTION)
+    await message.answer(ans, reply_markup=keyboard)
+    set_user_state(user_id, state)
+
     await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
     await bot.send_photo(user_id, user.link_photo)
     await message.answer("Выберите действие ниже", reply_markup=form_keyboard)
-
-
-
-
 
 
 # Обработчик для inline-кнопок
