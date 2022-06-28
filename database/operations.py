@@ -98,14 +98,16 @@ def get_all_users():
 
 def create_invite_code():
     """ Создает код приглашения для пользователя """
-    alp = "ERTYUIOPASDFGHJKLZXCVBNM1234567890"
+    alp = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890"
     return ''.join(secrets.choice(alp) for i in range(8))
 
 
 def check_invite_code(invite_code: str):
     """ Проверяет код приглашения"""
     db = get_db()
-    return bool(db.query(User.invite_code == invite_code).first())
+    if len(invite_code) != 8:
+        return False
+    return bool(db.query(User).filter(User.invite_code == invite_code).first())
 
 
 def set_user_name(user_id, name):
@@ -114,9 +116,10 @@ def set_user_name(user_id, name):
     user = get_user_by_tg_id(user_id)
     if not user:
         user = User(name=name, invite_code=create_invite_code())
+        db.add(user)
+        db.commit()
         state = db.query(State).filter(State.tg_id == user_id).first()
         state.user_id = user.id
-        db.add(user)
 
     user.name = name
     db.commit()
