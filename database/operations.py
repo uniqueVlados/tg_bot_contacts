@@ -176,3 +176,12 @@ def get_next_show_user(user_id: int):
     return next_user
 
 
+def pass_show_user(user_id: int):
+    """ Пропускает пользователя для показа """
+    db = get_db()
+    user = get_user_by_tg_id(user_id)
+    user.show_user_id += 1
+    if user.show_user_id > len(get_all_users()):
+        user.show_user_id = 1
+    db.commit()
+
