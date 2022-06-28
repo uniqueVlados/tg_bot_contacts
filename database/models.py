@@ -9,7 +9,6 @@ class User(Base):
 
     id = Column(Integer, nullable=False, unique=True, primary_key=True, autoincrement=True)
     name = Column(String(30))
-    last_name = Column(String(30))
     gender = Column(String(1))
     love_gender = Column(String(1))
     link_photo = Column(String(50))
