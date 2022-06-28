@@ -118,7 +118,7 @@ async def handle_description_input(message: types.Message, user_id, description)
         return
     state = LOCATION_INPUT
     ans = DESK_ACCEPTED
-    keyword = types.ReplyKeyboardRemove()
+    keyboard = types.ReplyKeyboardRemove()
     if user and user.description:
         state = WAIT_FOR_ACTION
         ans = NEW_DESCRIPTION_EDIT
