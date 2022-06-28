@@ -65,4 +65,36 @@ LOCATION_ACCEPTED = "С местом определились. Осталось 
 
 
 PHOTO_ERROR = "Для чего мне это фотка скйчас?"
-PHOTO__ACCEPTED = "Фотошрафия загружена. Анкета полностью заполнена."
+PHOTO_ACCEPTED = "Фотография загружена. Анкета полностью заполнена."
+
+
+GET_FORM = "Посмотреть анкету"
+EDIT_FORM = "Редактировать анкету"
+
+FORM_INFO = "Выберите, что хотите поменять"
+
+
+CHANGE = "изменить"
+
+NAME = "имя"
+GENDER = "пол"
+LOCATION = "город"
+DESCRIPTION = "описание"
+LINK_PHOTO = "фото"
+
+
+NEW_NAME = "Введите новое имя"
+NEW_NAME_EDIT = "Имя изменено"
+
+NEW_GENDER = "Выберите пол"
+NEW_GENDER_EDIT = "Пол изменён"
+
+NEW_LOCATION = "Введите новый город"
+NEW_GENDER_EDIT = "Город изменён"
+
+NEW_DESCRIPTION = "Введите описание"
+NEW_DESCRIPTION_EDIT = "Описание изменено"
+
+
+NEW_LINK_PHOTO = "Отправьте фото"
+NEW_LINK_PHOTO_EDIT = "Фото изменено"
