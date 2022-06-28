@@ -90,7 +90,7 @@ NEW_GENDER = "Выберите пол"
 NEW_GENDER_EDIT = "Пол изменён"
 
 NEW_LOCATION = "Введите новый город"
-NEW_GENDER_EDIT = "Город изменён"
+NEW_LOCATION_EDIT = "Город изменён"
 
 NEW_DESCRIPTION = "Введите описание"
 NEW_DESCRIPTION_EDIT = "Описание изменено"
