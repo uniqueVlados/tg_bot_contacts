@@ -80,7 +80,7 @@ async def handle_name_input(message: types.Message, user_id, name):
     if user and user.name:
         state = WAIT_FOR_ACTION
         ans = NEW_NAME_EDIT
-        keyboard = types.ReplyKeyboardRemove()
+        keyboard = form_keyboard
     set_user_name(user_id, name)
     set_user_state(user_id, state)
     await message.answer(ans, reply_markup=keyboard)
@@ -97,12 +97,14 @@ async def handle_gender(message: types.Message, user_id, gender):
         return
     state = DESCRIPTION_INPUT
     ans = GENDER_ACCEPTED
+    keyboard = types.ReplyKeyboardRemove()
     if user and user.gender:
         state = WAIT_FOR_ACTION
         ans = NEW_GENDER_EDIT
+        keyboard = form_keyboard
     set_user_gender(user_id, gender)
     set_user_state(user_id, state)
-    await message.answer(ans, reply_markup=types.ReplyKeyboardRemove())
+    await message.answer(ans, reply_markup=keyboard)
 
 
 def check_description(desc):
@@ -116,12 +118,14 @@ async def handle_description_input(message: types.Message, user_id, description)
         return
     state = LOCATION_INPUT
     ans = DESK_ACCEPTED
+    keyword = types.ReplyKeyboardRemove()
     if user and user.description:
         state = WAIT_FOR_ACTION
         ans = NEW_DESCRIPTION_EDIT
+        keyboard = form_keyboard
     set_user_description(user_id, description)
     set_user_state(user_id, state)
-    await message.answer(ans, reply_markup=types.ReplyKeyboardRemove())
+    await message.answer(ans, reply_markup=keyboard)
 
 
 async def handle_location_input(message: types.Message, user_id, location):
@@ -131,12 +135,36 @@ async def handle_location_input(message: types.Message, user_id, location):
         return
     state = LINK_PHOTO_INPUT
     ans = LOCATION_ACCEPTED
+    keyboard = types.ReplyKeyboardRemove()
     if user and user.location:
         state = WAIT_FOR_ACTION
         ans = NEW_LOCATION_EDIT
+        keyboard = form_keyboard
     set_user_location(user_id, location)
     set_user_state(user_id, state)
-    await message.answer(ans, reply_markup=types.ReplyKeyboardRemove())
+    await message.answer(ans, reply_markup=keyboard)
+
+
+async def handle_watch_form(message: types.Message, user_id, text):
+    current_user = get_next_show_user(user_id)
+    await message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
+    await bot.send_photo(user_id, current_user.link_photo)
+    await message.answer("Выберите действие ниже", reply_markup=user_keyboard)
+    if message.text == LOVE_USER:
+        if check_like(user_id, current_user.id):
+            await message.answer(f"{MEETING}\n{current_user.id}")
+            await bot.send_photo(user_id, current_user.link_photo)
+        # запоминать этот лайк
+        # Как проверять, что у тебя есть лайки
+    elif message.text == SKIP_USER:
+        pass_show_user(user_id)
+        await message.answer(SKIP_INFO, reply_markup=user_keyboard)
+    if message.text == PAUSE_USER:
+        set_user_state(user_id, WAIT_FOR_ACTION)
+        await message.answer(PAUSE_INFO, reply_markup=form_keyboard)
+
+
+
 
 
 # обработчик текстовых сообщений
@@ -152,6 +180,7 @@ async def handle_messages(message: types.Message):
                         GENDER_INPUT: handle_gender,
                         DESCRIPTION_INPUT: handle_description_input,
                         LOCATION_INPUT: handle_location_input,
+                        WATCH_FORM: handle_watch_form,
                         }
 
     function = handle_functions.get(state)
@@ -167,17 +196,23 @@ async def handle_docs_photo(message: types.Message):
     user = get_user_by_tg_id(user_id)
     state = LINK_PHOTO_INPUT
     ans = PHOTO_ACCEPTED
+    keyboard = types.ReplyKeyboardRemove()
     if user and user.link_photo:
         state = WAIT_FOR_ACTION
         ans = NEW_LINK_PHOTO_EDIT
-
+        keyboard = form_keyboard
     set_user_link_photo(user_id, photo_id)
-    await message.answer(ans, reply_markup=types.ReplyKeyboardRemove())
-    set_user_state(user_id, state)
-
+    await message.answer(PHOTO_ACCEPTED, reply_markup=keyboard)
+    set_user_link_photo(user_id, photo_id)
+    user = get_user_by_tg_id(user_id)
+    set_user_state(user_id, WAIT_FOR_ACTION)
     await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
     await bot.send_photo(user_id, user.link_photo)
     await message.answer("Выберите действие ниже", reply_markup=form_keyboard)
+
+
+
+
 
 
 # Обработчик для inline-кнопок
@@ -187,11 +222,18 @@ async def call_back_data(callback: types.CallbackQuery):
     user_id = callback.from_user.id
 
     if data == GET_FORM:
-        await callback.message.answer(f"Анкета подтверждена", reply_markup=types.ReplyKeyboardRemove())
+        user = get_user_by_tg_id(user_id)
+        set_user_state(user_id, WAIT_FOR_ACTION)
+        await callback.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
+        await bot.send_photo(user_id, user.link_photo)
+        await callback.answer("Выберите действие ниже", reply_markup=form_keyboard)
     elif data == EDIT_FORM:
+        user = get_user_by_tg_id(user_id)
         set_user_state(user_id, WAIT_FOR_ACTION)
         await callback.message.answer(FORM_INFO, reply_markup=edit_keyboard)
-
+    elif data == WATCH_FORM:
+        user = get_user_by_tg_id(user_id)
+        set_user_state(user_id, WATCH_FORM)
     elif data == NAME:
         set_user_state(user_id, NAME_INPUT)
         await callback.message.answer(NEW_NAME, reply_markup=types.ReplyKeyboardRemove())
