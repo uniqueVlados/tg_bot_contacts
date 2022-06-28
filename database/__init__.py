@@ -10,20 +10,22 @@ Base = declarative_base()
 session_maker = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 
-class DBContext:
+class DBHolder:
     """Контекст обращения к бд (если бд нет, то создать; если есть, то вернуть ссылку на нее)"""
 
     def __init__(self):
         self.db = session_maker()
 
-    def __enter__(self):
-        return self.db
-
     def __exit__(self, exc_type, exc_value, traceback):
         self.db.close()
+
+    def get_bd(self):
+        return self.db
 
 
 def get_db():
     """Функция для получения текущей сессии к БД"""
-    with DBContext() as session:
-        return session
+    return db_holder.get_bd()
+
+
+db_holder = DBHolder()

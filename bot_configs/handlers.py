@@ -26,7 +26,7 @@ async def start_(message: types.Message):
 @dp.message_handler(commands=['form'])
 async def get_form_(message: types.Message):
     user_id = message.from_user.id
-    user = get_user_by_id(user_id)
+    user = get_user_by_tg_id(user_id)
     set_user_state(user_id, WAIT_FOR_ACTION)
     await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
     await bot.send_photo(user_id, user.link_photo)
@@ -70,7 +70,7 @@ def check_name(name):
 
 
 async def handle_name_input(message: types.Message, user_id, name):
-    user = get_user_by_id(user_id)
+    user = get_user_by_tg_id(user_id)
     if not check_name(name):
         await message.answer(NAME_ERROR, reply_markup=types.ReplyKeyboardRemove())
         return
@@ -91,7 +91,7 @@ def check_gender(gender):
 
 
 async def handle_gender(message: types.Message, user_id, gender):
-    user = get_user_by_id(user_id)
+    user = get_user_by_tg_id(user_id)
     if not check_gender(gender):
         await message.answer(ERROR_KEYBOARD, reply_markup=gender_keyboard)
         return
@@ -110,7 +110,7 @@ def check_description(desc):
 
 
 async def handle_description_input(message: types.Message, user_id, description):
-    user = get_user_by_id(user_id)
+    user = get_user_by_tg_id(user_id)
     if not check_description(description):
         await message.answer(DESC_ERROR, reply_markup=types.ReplyKeyboardRemove())
         return
@@ -125,7 +125,7 @@ async def handle_description_input(message: types.Message, user_id, description)
 
 
 async def handle_location_input(message: types.Message, user_id, location):
-    user = get_user_by_id(user_id)
+    user = get_user_by_tg_id(user_id)
     if not cities.check_location(location.capitalize()):
         await message.answer(LOCATION_ERROR, reply_markup=types.ReplyKeyboardRemove())
         return
@@ -164,7 +164,7 @@ async def handle_messages(message: types.Message):
 async def handle_docs_photo(message: types.Message):
     user_id = str(message.from_user.id)
     photo_id = message.photo[0].file_id
-    user = get_user_by_id(user_id)
+    user = get_user_by_tg_id(user_id)
     state = LINK_PHOTO_INPUT
     ans = PHOTO_ACCEPTED
     if user and user.link_photo:
@@ -193,7 +193,7 @@ async def call_back_data(callback: types.CallbackQuery):
     if data == GET_FORM:
         await callback.message.answer(f"Анкета подтверждена", reply_markup=types.ReplyKeyboardRemove())
     elif data == EDIT_FORM:
-        user = get_user_by_id(user_id)
+        user = get_user_by_tg_id(user_id)
         set_user_state(user_id, WAIT_FOR_ACTION)
         await callback.message.answer(FORM_INFO, reply_markup=edit_keyboard)
 

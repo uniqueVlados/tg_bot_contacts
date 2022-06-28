@@ -54,6 +54,7 @@ def check_user_account(tg_user_id: int):
 def get_user_by_tg_id(tg_user_id: int):
     """ Получает пользователя по его tg_id """
     db = get_db()
+    print(db)
     state = db.query(State).filter(State.tg_id == tg_user_id).first()
     if state is None or state.user is None:
         return None
@@ -70,6 +71,7 @@ def get_user_by_id(user_id: int):
 def get_user_state(tg_user_id: int):
     """ Получает состояние пользователя """
     db = get_db()
+    print(db)
     state = db.query(State).filter(State.tg_id == tg_user_id).first()
 
     if not state:
@@ -81,6 +83,7 @@ def get_user_state(tg_user_id: int):
 def set_user_state(tg_user_id: int, value: str):
     """ Устанавливает состояние пользователя """
     db = get_db()
+    print(db)
     state = db.query(State).filter(State.tg_id == tg_user_id).first()
     if not state:
         state = State(tg_id=tg_user_id, value=value)
@@ -105,6 +108,7 @@ def create_invite_code():
 def check_invite_code(invite_code: str):
     """ Проверяет код приглашения"""
     db = get_db()
+    print(db)
     if len(invite_code) != 8:
         return False
     return bool(db.query(User).filter(User.invite_code == invite_code).first())
