@@ -12,6 +12,10 @@ def check_like(from_user_id: int, to_user_id: int):
         db.commit()
         return True
 
+    has_like = db.query(Like).filter((Like.from_user_id == from_user_id) & (Like.to_user_id == to_user_id)).first()
+    if has_like:
+        return False
+
     like = Like(from_user_id=from_user_id, to_user_id=to_user_id)
     db.add(like)
     db.commit()
@@ -189,11 +193,16 @@ def get_next_show_user(user_id: int):
 
     counter = 0
     user.show_user_id += 1
+    if user.show_user_id > all_users_count - 1:
+        user.show_user_id = 1
+
     while (not db.query(User).filter(User.id == user.show_user_id).first().is_active
            or user.show_user_id == user.id) and all_active_users > 0:
         user.show_user_id += 1
+
         if user.show_user_id > all_users_count - 1:
             user.show_user_id = 1
+
         counter += 1
         if counter >= all_users_count:
             return None
@@ -217,7 +226,7 @@ def change_active(user_id):
 
 def get_active(user_id):
     user = get_user_by_tg_id(user_id)
-    return user.is_active
+    return user and user.is_active
 
 
 def get_invite_code(user_id):

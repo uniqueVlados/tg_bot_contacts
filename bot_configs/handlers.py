@@ -12,8 +12,6 @@ from .messages import *
 @dp.message_handler(commands=['start'])
 async def start_(message: types.Message):
     user_id = message.from_user.id
-    nickname = message.from_user.full_name
-    set_user_nickname(user_id, nickname)
     reply_text = WELCOME_HAS_ACCOUNT
     user_new_state = WAIT_FOR_ACTION
 
@@ -90,6 +88,7 @@ async def handle_name_input(message: types.Message, user_id, name):
         keyboard = get_keyboard(user_id)
 
     set_user_name(user_id, name)
+    set_user_nickname(user_id, message.from_user.username)
     set_user_state(user_id, state)
     await message.answer(ans, reply_markup=keyboard)
 
@@ -261,8 +260,8 @@ async def call_back_data(callback: types.CallbackQuery):
         tg_user = user.state
 
         if check_like(user_id, tg_user.tg_id):
-            await callback.message.answer(f"{MEETING}\n{user.state.tg_id}")
-            await bot.send_message(tg_user.tg_id, f"{MEETING}\n{user_id}")
+            await callback.message.answer(f"{MEETING}\n@{user.nickname}")
+            await bot.send_message(tg_user.tg_id, f"{MEETING}\n@{callback.from_user.username}")
         else:
             await callback.message.answer(WAIT_FOR_LIKE)
 
@@ -270,7 +269,6 @@ async def call_back_data(callback: types.CallbackQuery):
         await callback.message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
         await bot.send_photo(user_id, current_user.link_photo)
         await callback.message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
-
 
     elif data == SKIP_USER:
         await callback.message.answer(SKIP_USER_MESSAGE)
