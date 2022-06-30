@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text, Boolean
+import datetime
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text, Boolean, func
 from sqlalchemy.orm import relationship
 
 from . import Base
@@ -37,7 +39,23 @@ class Like(Base):
     user_to = relationship("User", foreign_keys=[to_user_id], back_populates="likes_to", uselist=False)
 
     def __repr__(self):
-        return f"<Like({self.subject} to {self.object})>"
+        return f"<Like({self.from_user_id} to {self.to_user_id})>"
+
+
+class Dislike(Base):
+    __tablename__ = 'dislike'
+
+    id = Column(Integer, nullable=False, unique=True, primary_key=True, autoincrement=True)
+    from_user_id = Column(Integer, ForeignKey('user.id'))
+    to_user_id = Column(Integer, ForeignKey('user.id'))
+    date = Column(Date, default=func.now())
+    date_to_delete = Column(Date, default=func.now() + datetime.timedelta(days=14))
+
+    user_from = relationship("User", foreign_keys=[from_user_id], back_populates="likes_from", uselist=False)
+    user_to = relationship("User", foreign_keys=[to_user_id], back_populates="likes_to", uselist=False)
+
+    def __repr__(self):
+        return f"<Dislike({self.subject} to {self.object})>"
 
 
 class State(Base):

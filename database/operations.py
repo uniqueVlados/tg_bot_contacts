@@ -1,5 +1,7 @@
 import secrets
-from database.models import User, Like, State
+from datetime import datetime
+
+from database.models import User, Like, State, Dislike
 from . import get_db
 
 
@@ -197,7 +199,8 @@ def get_next_show_user(user_id: int):
         user.show_user_id = 1
 
     while (not db.query(User).filter(User.id == user.show_user_id).first().is_active
-           or user.show_user_id == user.id) and all_active_users > 0:
+           or user.show_user_id == user.id) and all_active_users > 0\
+            and get_dislike(user_id, db.query(State).filter(State.user_id == user.show_user_id).first()):
         user.show_user_id += 1
 
         if user.show_user_id > all_users_count - 1:
@@ -232,3 +235,23 @@ def get_active(user_id):
 def get_invite_code(user_id):
     user = get_user_by_tg_id(user_id)
     return user.invite_code
+
+
+def create_dislike(from_user_id, to_user_id):
+    """ Дизлайк для пользователя"""
+    db = get_db()
+    dislike = Dislike(from_user_id=from_user_id, to_user_id=to_user_id)
+    db.add(dislike)
+    db.commit()
+
+
+def get_dislike(from_user_id, to_user_id):
+    """" Получает дизлайк """
+    db = get_db()
+    dislike = db.query(Like).filter((Like.from_user_id == from_user_id) & (Like.to_user_id == to_user_id)).first()
+    if dislike and dislike.date_to_delete < datetime.now():
+        db.delete(dislike)
+        db.commit()
+        return None
+
+    return bool(dislike)
