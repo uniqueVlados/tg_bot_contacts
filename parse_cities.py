@@ -14,4 +14,3 @@ class Cities:
 
     def check_location(self, city):
         return city in self.cities
-
