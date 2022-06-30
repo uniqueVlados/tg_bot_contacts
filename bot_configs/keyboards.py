@@ -7,11 +7,6 @@ config_data = ConfigData()
 
 
 # BUTTONS
-menu1 = KeyboardButton(MENU_1)
-menu2 = KeyboardButton(MENU_2)
-menu3 = KeyboardButton(MENU_3)
-menu4 = KeyboardButton(MENU_4)
-
 agreement_agree = KeyboardButton(AGREE)
 agreement_disagree = KeyboardButton(DISAGREE)
 
@@ -31,20 +26,10 @@ location_edit = InlineKeyboardMarkup(text=LOCATION, callback_data=LOCATION)
 description_edit = InlineKeyboardMarkup(text=DESCRIPTION, callback_data=DESCRIPTION)
 link_photo_edit = InlineKeyboardMarkup(text=LINK_PHOTO, callback_data=LINK_PHOTO)
 
-# in_btn_1 = KeyboardButton(SHOW)
-# in_btn_2 = KeyboardButton(DONT_SHOW)
-
-love_user = KeyboardButton(LOVE_USER)
-skip_user = KeyboardButton(SKIP_USER)
-pause_user = KeyboardButton(PAUSE_USER)
-
 link_agreement = InlineKeyboardButton('Соглашение', url=config_data.LINK_AGR)
 
 # KEYBOARDS
-menu = ReplyKeyboardMarkup()
-menu.add(menu1, menu2, menu3, menu4)
-
-agreement_keyboard = ReplyKeyboardMarkup()
+agreement_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 agreement_keyboard.add(agreement_agree, agreement_disagree)
 
 agreement_link_keyboard = InlineKeyboardMarkup()
@@ -62,13 +47,9 @@ edit_keyboard = InlineKeyboardMarkup()
 edit_keyboard.add(name_edit, gender_edit, location_edit, description_edit, link_photo_edit)
 
 
-user_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-user_keyboard.add(love_user, skip_user, pause_user)
-
-
 def create_inline_keyboard(to_user_id):
-    love_user_ = InlineKeyboardButton(LOVE_USER, callback_data=to_user_id)
-    skip_user_ = InlineKeyboardButton(SKIP_USER, callback_data=SKIP_USER)
+    love_user_ = InlineKeyboardButton(LOVE_USER, callback_data=f"*{to_user_id}")
+    skip_user_ = InlineKeyboardButton(SKIP_USER, callback_data=f"&{to_user_id}")
     # pause_user_ = InlineKeyboardButton(PAUSE_USER, callback_data=PAUSE_USER)
 
     keyboard = InlineKeyboardMarkup()

@@ -200,7 +200,7 @@ def get_next_show_user(user_id: int):
 
     while (not db.query(User).filter(User.id == user.show_user_id).first().is_active
            or user.show_user_id == user.id) and all_active_users > 0\
-            and get_dislike(user_id, db.query(State).filter(State.user_id == user.show_user_id).first()):
+            and get_dislike(user_id, db.query(State).filter(State.user_id == user.show_user_id).first().tg_id):
         user.show_user_id += 1
 
         if user.show_user_id > all_users_count - 1:
@@ -248,7 +248,7 @@ def create_dislike(from_user_id, to_user_id):
 def get_dislike(from_user_id, to_user_id):
     """" Получает дизлайк """
     db = get_db()
-    dislike = db.query(Like).filter((Like.from_user_id == from_user_id) & (Like.to_user_id == to_user_id)).first()
+    dislike = db.query(Dislike).filter((Dislike.from_user_id == from_user_id) & (Dislike.to_user_id == to_user_id)).first()
     if dislike and dislike.date_to_delete < datetime.now():
         db.delete(dislike)
         db.commit()

@@ -20,7 +20,7 @@ async def start_(message: types.Message):
         reply_text = WELCOME
         user_new_state = NEED_INVITE
 
-    await message.answer(reply_text, reply_markup=get_keyboard(user_id))
+    await message.answer(reply_text, reply_markup=types.ReplyKeyboardRemove())
     set_user_state(user_id, user_new_state)
 
 
@@ -31,6 +31,13 @@ async def get_form_(message: types.Message):
     set_user_state(user_id, WAIT_FOR_ACTION)
     await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
     await bot.send_photo(user_id, user.link_photo)
+
+
+@dp.message_handler(commands=['keyboard'])
+async def get_keyboard(message: types.Message):
+    user_id = message.from_user.id
+    if get_user_state(user_id) == "WAIT_FOR_ACTION":
+        await message.answer(f"Клавиатура на месте", reply_markup=get_keyboard(user_id))
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -47,7 +54,7 @@ async def handle_invite_code(message: types.Message, user_id, invite_code):
 
     if agreement_mess:
         await message.answer(agreement_mess, reply_markup=agreement_keyboard)
-        await message.answer(SHOW, reply_markup=agreement_link_keyboard)
+        await message.answer("Прочитать приглашение по ссылке", reply_markup=agreement_link_keyboard)
 
 
 async def handle_agreement(message: types.Message, user_id, answer_):
@@ -78,9 +85,10 @@ async def handle_name_input(message: types.Message, user_id, name):
         await message.answer(NAME_ERROR, reply_markup=types.ReplyKeyboardRemove())
         return
 
-    state = GENDER_INPUT
+    # state = GENDER_INPUT
+    state = DESCRIPTION_INPUT
     ans = NAME_ACCEPTED
-    keyboard = gender_keyboard
+    keyboard = None
 
     if user and user.name:
         state = WAIT_FOR_ACTION
@@ -255,8 +263,9 @@ async def call_back_data(callback: types.CallbackQuery):
     data = callback.data
     user_id = callback.from_user.id
 
-    if str(data).isdigit():
-        user = get_user_by_id(data)
+    if data[0] == "*":
+        print(data)
+        user = get_user_by_id(data[1:])
         tg_user = user.state
 
         if check_like(user_id, tg_user.tg_id):
@@ -270,7 +279,10 @@ async def call_back_data(callback: types.CallbackQuery):
         await bot.send_photo(user_id, current_user.link_photo)
         await callback.message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
 
-    elif data == SKIP_USER:
+    elif data[0] == "&":
+        user = get_user_by_id(data[1:])
+        tg_user = user.state
+        create_dislike(user_id, tg_user.tg_id)
         await callback.message.answer(SKIP_USER_MESSAGE)
         current_user = get_next_show_user(user_id)
         await callback.message.answer(
