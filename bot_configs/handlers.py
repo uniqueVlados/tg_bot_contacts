@@ -194,8 +194,8 @@ async def handle_actions(message: types.Message, user_id, text):
             await message.answer(NOT_ENOUGH_USERS)
             return
 
-        await message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
         await bot.send_photo(user_id, current_user.link_photo)
+        await message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
         await message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
 
     elif text == INVITE:
@@ -251,8 +251,8 @@ async def handle_docs_photo(message: types.Message):
     await message.answer(ans, reply_markup=keyboard)
     set_user_state(user_id, state)
 
-    await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
     await bot.send_photo(user_id, user.link_photo)
+    await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
     await message.answer("Выберите действие ниже", reply_markup=form_keyboard)
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -264,31 +264,60 @@ async def call_back_data(callback: types.CallbackQuery):
     user_id = callback.from_user.id
 
     if data[0] == "*":
-        print(data)
         user = get_user_by_id(data[1:])
         tg_user = user.state
 
         if check_like(user_id, tg_user.tg_id):
-            await callback.message.answer(f"{MEETING}\n@{user.nickname}")
+            # await callback.message.answer(f"{MEETING}\n@{user.nickname}")
+            await bot.edit_message_reply_markup(
+                chat_id=callback.from_user.id,
+                message_id=callback.message.message_id,
+                reply_markup=None
+            )
+            await bot.edit_message_text(chat_id=user_id, message_id=callback.message.message_id, text=f"{MEETING}\n@{user.nickname}")
             await bot.send_message(tg_user.tg_id, f"{MEETING}\n@{callback.from_user.username}")
         else:
-            await callback.message.answer(WAIT_FOR_LIKE)
+            await bot.edit_message_reply_markup(
+                chat_id=callback.from_user.id,
+                message_id=callback.message.message_id,
+                reply_markup=None
+            )
+            await bot.edit_message_text(chat_id=user_id,  message_id=callback.message.message_id, text=WAIT_FOR_LIKE)
+           # await callback.message.answer(WAIT_FOR_LIKE)
 
         current_user = get_next_show_user(user_id)
+        if not current_user:
+            await callback.answer(NOT_ENOUGH_USERS)
+            return
+
         await callback.message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
         await bot.send_photo(user_id, current_user.link_photo)
         await callback.message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
+
 
     elif data[0] == "&":
         user = get_user_by_id(data[1:])
         tg_user = user.state
         create_dislike(user_id, tg_user.tg_id)
-        await callback.message.answer(SKIP_USER_MESSAGE)
+        await bot.edit_message_reply_markup(
+            chat_id=callback.from_user.id,
+            message_id=callback.message.message_id,
+            reply_markup=None
+        )
+        await bot.edit_message_text(chat_id=user_id, message_id=callback.message.message_id, text=SKIP_USER_MESSAGE)
+        # await callback.message.answer(SKIP_USER_MESSAGE)
         current_user = get_next_show_user(user_id)
+
+        if not current_user:
+            await callback.answer(NOT_ENOUGH_USERS)
+            return
+
+
         await callback.message.answer(
             f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
         await bot.send_photo(user_id, current_user.link_photo)
         await callback.message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
+
 
     else:
         actions = {NAME: (NAME_INPUT, NEW_NAME),
@@ -303,4 +332,12 @@ async def call_back_data(callback: types.CallbackQuery):
         await callback.message.answer(ans, reply_markup=keyboard)
 
     await callback.answer()
-    # TODO: удаление клавы при нажатии на inline-кнопку
+
+
+# @dp.callback_query_handler(text=LOVE_USER)
+# async def call_main_menu(callback: types.CallbackQuery):
+#     await bot.edit_message_reply_markup(
+#         chat_id=callback.from_user.id,
+#         message_id=callback.message.message_id,
+#         reply_markup=None
+#     )
