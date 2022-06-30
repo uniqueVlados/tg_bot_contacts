@@ -181,8 +181,8 @@ async def handle_actions(message: types.Message, user_id, text):
         if not user:
             await message.answer(ERROR_KEYBOARD)
             return
-        await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
         await bot.send_photo(user_id, user.link_photo)
+        await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
 
     elif text == EDIT_FORM:
         set_user_state(user_id, WAIT_FOR_ACTION)
@@ -290,8 +290,8 @@ async def call_back_data(callback: types.CallbackQuery):
             await callback.answer(NOT_ENOUGH_USERS)
             return
 
-        await callback.message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
         await bot.send_photo(user_id, current_user.link_photo)
+        await callback.message.answer(f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
         await callback.message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
 
 
@@ -312,10 +312,9 @@ async def call_back_data(callback: types.CallbackQuery):
             await callback.answer(NOT_ENOUGH_USERS)
             return
 
-
+        await bot.send_photo(user_id, current_user.link_photo)
         await callback.message.answer(
             f"{current_user.name}\n{current_user.location}\n-------------\n{current_user.description}")
-        await bot.send_photo(user_id, current_user.link_photo)
         await callback.message.answer("Выберите действие ниже", reply_markup=create_inline_keyboard(current_user.id))
 
 

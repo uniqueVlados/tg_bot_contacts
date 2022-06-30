@@ -44,7 +44,7 @@ form_keyboard_flag = ReplyKeyboardMarkup(resize_keyboard=True)
 form_keyboard_flag.add(get_form, edit_form, not_active_flag, invite)
 
 edit_keyboard = InlineKeyboardMarkup()
-edit_keyboard.add(name_edit, gender_edit, location_edit, description_edit, link_photo_edit)
+edit_keyboard.add(name_edit, location_edit, description_edit, link_photo_edit)
 
 
 def create_inline_keyboard(to_user_id):
