@@ -49,13 +49,13 @@ class Dislike(Base):
     from_user_id = Column(Integer, ForeignKey('user.id'))
     to_user_id = Column(Integer, ForeignKey('user.id'))
     date = Column(Date, default=func.now())
-    date_to_delete = Column(Date, default=func.now() + datetime.timedelta(days=14))
+    date_to_delete = Column(Date, default=(datetime.datetime.utcnow() + datetime.timedelta(days=14)))
 
     user_from = relationship("User", foreign_keys=[from_user_id], uselist=False)
     user_to = relationship("User", foreign_keys=[to_user_id], uselist=False)
 
     def __repr__(self):
-        return f"<Dislike({self.subject} to {self.object})>"
+        return f"<Dislike({self.from_user_id} to {self.to_user_id})>"
 
 
 class State(Base):
