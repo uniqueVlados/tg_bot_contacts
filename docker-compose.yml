@@ -1,0 +1,10 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  app:
+    container_name: bot
+    build: .
+    restart: always
+    command: python main.py
