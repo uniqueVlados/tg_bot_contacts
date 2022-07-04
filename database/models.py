@@ -17,8 +17,8 @@ class User(Base):
     description = Column(Text(200))
     location = Column(String(50))
     invite_code = Column(String(8))
-    show_user_id = Column(Integer, ForeignKey("user.id"))
-    is_active = Column(Boolean, default=True)
+    show_user_id = Column(Integer, ForeignKey("user.id"), default=0)
+    is_active = Column(Boolean, default=False)
 
     likes_from = relationship("Like", back_populates="user_from", foreign_keys="Like.from_user_id")
     likes_to = relationship("Like", back_populates="user_to", foreign_keys="Like.to_user_id")

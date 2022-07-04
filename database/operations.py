@@ -8,19 +8,11 @@ from . import get_db
 def check_like(from_user_id: int, to_user_id: int):
     """ Проверяет лайк на взаимность между пользователями """
     db = get_db()
+
     mutual_like = db.query(Like).filter((Like.from_user_id == to_user_id) & (Like.to_user_id == from_user_id)).first()
     if mutual_like:
-        db.delete(mutual_like)
-        db.commit()
         return True
 
-    has_like = db.query(Like).filter((Like.from_user_id == from_user_id) & (Like.to_user_id == to_user_id)).first()
-    if has_like:
-        return False
-
-    like = Like(from_user_id=from_user_id, to_user_id=to_user_id)
-    db.add(like)
-    db.commit()
     return False
 
 
@@ -174,52 +166,78 @@ def set_user_link_photo(user_id, link):
     """ Устанавливает описание пользователю """
     db = get_db()
     user = get_user_by_tg_id(user_id)
+    if not user.link_photo:
+        user.is_active = True
     user.link_photo = link
     db.commit()
 
 
-# TODO ПЕРЕДЕЛАТЬ
+# def get_next_show_user(user_id: int):
+#     """ Получает следующего пользователя для показа """
+#     db = get_db()
+#     all_users_count = db.query(User).count()
+#     all_active_users = db.query(User).filter(User.is_active == True).count()
+#
+#     if all_users_count < 4:
+#         return None
+#
+#     user = get_user_by_tg_id(user_id)
+#     if not user.show_user_id:
+#         user.show_user_id = 1
+#
+#     next_user = db.query(User).filter(User.id == user.show_user_id).first()
+#
+#     counter = 0
+#     user.show_user_id += 1
+#     if user.show_user_id > all_users_count - 1:
+#         user.show_user_id = 1
+#
+#     while (not db.query(User).filter(User.id == user.show_user_id).first().is_active
+#            or user.show_user_id == user.id) \
+#             or get_dislike(user_id, db.query(State).filter(State.user_id == user.show_user_id).first().tg_id) \
+#             or get_like(user_id, db.query(State).filter(State.user_id == user.show_user_id).first().tg_id):
+#         user.show_user_id += 1
+#
+#         if user.show_user_id > all_users_count - 1:
+#             user.show_user_id = 1
+#
+#         counter += 1
+#         if counter >= all_users_count:
+#             return None
+#
+#     # if user.show_user_id == user.id:
+#     #     user.show_user_id += 1
+#     #
+#     # if user.show_user_id > all_users_count - 1:
+#     #     user.show_user_id = 1
+#
+#     db.commit()
+#     return next_user
+
+
 def get_next_show_user(user_id: int):
     """ Получает следующего пользователя для показа """
     db = get_db()
-    all_users_count = db.query(User).count()
-    all_active_users = db.query(User).filter(User.is_active == True).count()
+    user = get_user_by_tg_id(user_id)
+    next_user_id = user.show_user_id
 
-    if all_users_count < 4:
+    # Получаем всех активных пользователей
+    next_active_users = db.query(User).filter((User.is_active == True) &
+                                              (User.id != user.id)).all()
+
+    next_active_users = list(filter(lambda user_: user_.id > next_user_id and user_.id != user.id, next_active_users)) + \
+                        list(filter(lambda user_: user_.id < next_user_id and user_.id != user.id, next_active_users))
+
+    if not next_active_users:
         return None
 
-    user = get_user_by_tg_id(user_id)
-    if not user.show_user_id:
-        user.show_user_id = 1
+    for next_user in next_active_users:
+        if not get_dislike(user_id, next_user.state.tg_id) \
+                and not get_like(user_id, next_user.state.tg_id):
+            user.show_user_id = next_user.id
+            return next_user
 
-    next_user = db.query(User).filter(User.id == user.show_user_id).first()
-
-    counter = 0
-    user.show_user_id += 1
-    if user.show_user_id > all_users_count - 1:
-        user.show_user_id = 1
-
-    while (not db.query(User).filter(User.id == user.show_user_id).first().is_active
-           or user.show_user_id == user.id) \
-            or get_dislike(user_id, db.query(State).filter(State.user_id == user.show_user_id).first().tg_id) \
-            or get_like(user_id, db.query(State).filter(State.user_id == user.show_user_id).first().tg_id):
-        user.show_user_id += 1
-
-        if user.show_user_id > all_users_count - 1:
-            user.show_user_id = 1
-
-        counter += 1
-        if counter >= all_users_count:
-            return None
-
-    # if user.show_user_id == user.id:
-    #     user.show_user_id += 1
-    #
-    # if user.show_user_id > all_users_count - 1:
-    #     user.show_user_id = 1
-
-    db.commit()
-    return next_user
+    return None
 
 
 def change_active(user_id):
@@ -276,7 +294,7 @@ def get_dislike(from_user_id, to_user_id):
 
 
 def get_like(from_user_id, to_user_id):
-    """" Получает дизлайк """
+    """" Получает лайк """
     db = get_db()
     like = db.query(Like).filter((Like.from_user_id == from_user_id) & (Like.to_user_id == to_user_id)).first()
     if like and like.date_to_delete < datetime.now().date():
