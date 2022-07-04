@@ -236,24 +236,25 @@ async def handle_messages(message: types.Message):
 @dp.message_handler(content_types=['photo'])
 async def handle_docs_photo(message: types.Message):
     user_id = str(message.from_user.id)
-    photo_id = message.photo[0].file_id
-    user = get_user_by_tg_id(user_id)
-    state = WAIT_FOR_ACTION
-    ans = PHOTO_ACCEPTED
-    keyboard = types.ReplyKeyboardRemove()
-
-    if user and user.link_photo:
+    if get_user_state(user_id) == LINK_PHOTO_INPUT:
+        photo_id = message.photo[0].file_id
+        user = get_user_by_tg_id(user_id)
         state = WAIT_FOR_ACTION
-        ans = NEW_LINK_PHOTO_EDIT
-        keyboard = form_keyboard
+        ans = PHOTO_ACCEPTED
+        keyboard = types.ReplyKeyboardRemove()
 
-    set_user_link_photo(user_id, photo_id)
-    await message.answer(ans, reply_markup=keyboard)
-    set_user_state(user_id, state)
+        if user and user.link_photo:
+            state = WAIT_FOR_ACTION
+            ans = NEW_LINK_PHOTO_EDIT
+            keyboard = form_keyboard
 
-    await bot.send_photo(user_id, user.link_photo)
-    await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
-    await message.answer("Выберите действие ниже", reply_markup=form_keyboard)
+        set_user_link_photo(user_id, photo_id)
+        await message.answer(ans, reply_markup=keyboard)
+        set_user_state(user_id, state)
+
+        await bot.send_photo(user_id, user.link_photo)
+        await message.answer(f"{user.name}\n{user.location}\n-------------\n{user.description}")
+        await message.answer("Выберите действие ниже", reply_markup=form_keyboard)
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -266,7 +267,7 @@ async def call_back_data(callback: types.CallbackQuery):
     if data[0] == "*":
         user = get_user_by_id(data[1:])
         tg_user = user.state
-
+        create_like(user_id, tg_user.tg_id)
         if check_like(user_id, tg_user.tg_id):
             # await callback.message.answer(f"{MEETING}\n@{user.nickname}")
             await bot.edit_message_reply_markup(

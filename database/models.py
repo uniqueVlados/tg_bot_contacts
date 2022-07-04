@@ -35,6 +35,9 @@ class Like(Base):
     from_user_id = Column(Integer, ForeignKey('user.id'))
     to_user_id = Column(Integer, ForeignKey('user.id'))
 
+    date = Column(Date, default=func.now())
+    date_to_delete = Column(Date, default=(datetime.datetime.utcnow() + datetime.timedelta(days=14)))
+
     user_from = relationship("User", foreign_keys=[from_user_id], back_populates="likes_from", uselist=False)
     user_to = relationship("User", foreign_keys=[to_user_id], back_populates="likes_to", uselist=False)
 

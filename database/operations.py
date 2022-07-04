@@ -178,6 +178,7 @@ def set_user_link_photo(user_id, link):
     db.commit()
 
 
+# TODO ПЕРЕДЕЛАТЬ
 def get_next_show_user(user_id: int):
     """ Получает следующего пользователя для показа """
     db = get_db()
@@ -200,7 +201,8 @@ def get_next_show_user(user_id: int):
 
     while (not db.query(User).filter(User.id == user.show_user_id).first().is_active
            or user.show_user_id == user.id) \
-            or get_dislike(user_id, db.query(State).filter(State.user_id == user.show_user_id).first().tg_id):
+            or get_dislike(user_id, db.query(State).filter(State.user_id == user.show_user_id).first().tg_id) \
+            or get_like(user_id, db.query(State).filter(State.user_id == user.show_user_id).first().tg_id):
         user.show_user_id += 1
 
         if user.show_user_id > all_users_count - 1:
@@ -249,6 +251,18 @@ def create_dislike(from_user_id, to_user_id):
     db.commit()
 
 
+def create_like(from_user_id, to_user_id):
+    """ Дизлайк для пользователя"""
+    db = get_db()
+    has_like = db.query(Like).filter((Like.from_user_id == from_user_id) & (Like.to_user_id == to_user_id)).first()
+    if has_like:
+        return True
+
+    like = Like(from_user_id=from_user_id, to_user_id=to_user_id)
+    db.add(like)
+    db.commit()
+
+
 def get_dislike(from_user_id, to_user_id):
     """" Получает дизлайк """
     db = get_db()
@@ -259,3 +273,15 @@ def get_dislike(from_user_id, to_user_id):
         return None
 
     return bool(dislike)
+
+
+def get_like(from_user_id, to_user_id):
+    """" Получает дизлайк """
+    db = get_db()
+    like = db.query(Like).filter((Like.from_user_id == from_user_id) & (Like.to_user_id == to_user_id)).first()
+    if like and like.date_to_delete < datetime.now().date():
+        db.delete(like)
+        db.commit()
+        return None
+
+    return bool(like)
