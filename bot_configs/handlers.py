@@ -276,7 +276,7 @@ async def call_back_data(callback: types.CallbackQuery):
                 reply_markup=None
             )
             if user.nickname is None:
-                await bot.edit_message_text(chat_id=user_id, message_id=callback.message.message_id, text=f"{MEETING}\nhttps://t.me/{tg_user.tg_id}")
+                await bot.edit_message_text(chat_id=user_id, message_id=callback.message.message_id, text=f'{MEETING}\n<a href="tg://user?id={tg_user.tg_id}"></a>', parse_mode="HTML")
             else:
                 await bot.edit_message_text(chat_id=user_id, message_id=callback.message.message_id,
                                             text=f"{MEETING}\n@{user.nickname}")
