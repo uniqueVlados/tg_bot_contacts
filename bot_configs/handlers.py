@@ -275,12 +275,23 @@ async def call_back_data(callback: types.CallbackQuery):
                 message_id=callback.message.message_id,
                 reply_markup=None
             )
-            if user.nickname is None:
-                await bot.edit_message_text(chat_id=user_id, message_id=callback.message.message_id, text=f'{MEETING}\n<a href="tg://user?id={tg_user.tg_id}"></a>', parse_mode="HTML")
-            else:
-                await bot.edit_message_text(chat_id=user_id, message_id=callback.message.message_id,
-                                            text=f"{MEETING}\n@{user.nickname}")
-            await bot.send_message(tg_user.tg_id, f"{MEETING}\n@{callback.from_user.username}")
+
+            from_user_link = user.nickname
+            from_parse_mode = None
+
+            if not from_user_link:
+                from_user_link = f'[Профиль пользователя](tg://user?id={tg_user.tg_id})'
+                from_parse_mode = "MarkdownV2"
+
+            to_user_link = callback.from_user.username
+            to_parse_mode = None
+
+            if not to_user_link:
+                to_parse_mode = "MarkdownV2"
+                to_user_link = f'[Профиль пользователя](tg://user?id={callback.from_user.id})'
+
+            await bot.send_message(user_id, f"{MEETING}\n@{from_user_link}", parse_mode=from_parse_mode)
+            await bot.send_message(tg_user.tg_id, f'{MEETING}\n@{to_user_link}', parse_mode=to_parse_mode)
         else:
             await bot.edit_message_reply_markup(
                 chat_id=callback.from_user.id,
