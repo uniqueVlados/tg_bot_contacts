@@ -260,7 +260,8 @@ def get_invite_code(user_id):
 def create_dislike(from_user_id, to_user_id):
     """ Дизлайк для пользователя"""
     db = get_db()
-    has_like = db.query(Dislike).filter((Dislike.from_user_id == from_user_id) & (Dislike.to_user_id == to_user_id)).first()
+    has_like = db.query(Dislike).filter(
+        (Dislike.from_user_id == from_user_id) & (Dislike.to_user_id == to_user_id)).first()
     if has_like:
         return True
 
@@ -284,7 +285,8 @@ def create_like(from_user_id, to_user_id):
 def get_dislike(from_user_id, to_user_id):
     """" Получает дизлайк """
     db = get_db()
-    dislike = db.query(Dislike).filter((Dislike.from_user_id == from_user_id) & (Dislike.to_user_id == to_user_id)).first()
+    dislike = db.query(Dislike).filter(
+        (Dislike.from_user_id == from_user_id) & (Dislike.to_user_id == to_user_id)).first()
     if dislike and dislike.date_to_delete < datetime.now().date():
         db.delete(dislike)
         db.commit()
