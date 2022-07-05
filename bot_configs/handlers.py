@@ -275,7 +275,11 @@ async def call_back_data(callback: types.CallbackQuery):
                 message_id=callback.message.message_id,
                 reply_markup=None
             )
-            await bot.edit_message_text(chat_id=user_id, message_id=callback.message.message_id, text=f"{MEETING}\n@{user.nickname}")
+            if user.nickname is None:
+                await bot.edit_message_text(chat_id=user_id, message_id=callback.message.message_id, text=f"{MEETING}\nhttps://t.me/{tg_user.tg_id}")
+            else:
+                await bot.edit_message_text(chat_id=user_id, message_id=callback.message.message_id,
+                                            text=f"{MEETING}\n@{user.nickname}")
             await bot.send_message(tg_user.tg_id, f"{MEETING}\n@{callback.from_user.username}")
         else:
             await bot.edit_message_reply_markup(
